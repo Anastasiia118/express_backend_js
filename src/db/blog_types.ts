@@ -1,5 +1,5 @@
 export interface BlogDBType {
-  id: number;
+  id: string;
   name: string;
   description: string;
   websiteUrl: string;
@@ -12,6 +12,6 @@ export interface CreateBlogType {
 }
 
 export interface BlogOutputType {
-  id: number;
+  id: string;
   name: string;
 }

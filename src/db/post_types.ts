@@ -3,7 +3,7 @@ export interface PostDBType {
   title: string;
   shortDescription: string;
   content: string;
-  blogId: number;
+  blogId: string;
   blogName: string;
 }
 
@@ -16,5 +16,5 @@ export interface CreatePostType {
   title: string;
   shortDescription: string;
   content: string;
-  blogId: number;
+  blogId: string;
 }
