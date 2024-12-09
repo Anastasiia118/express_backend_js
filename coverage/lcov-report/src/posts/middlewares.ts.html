@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/db/db.ts</title>
+    <title>Code coverage report for src/posts/middlewares.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/db</a> db.ts</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/posts</a> middlewares.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>15/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>3/5</span>
+                <span class='fraction'>1/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">82.35% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>14/17</span>
             </div>
         
             
@@ -88,56 +88,59 @@
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a>
 <a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">16x</span>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { PostDBType } from './post_types'
-import { BlogDBType } from './blog_types'
-&nbsp;
-export type DBType = { 
-  posts: PostDBType[]
-  blogs: BlogDBType[]
-}
-&nbsp;
-export const db: DBType = { // создаём базу данных (пока это просто переменная)
-  posts: [],
-  blogs: [],
-}
-&nbsp;
-// функция для быстрой очистки/заполнения базы данных для тестов
-export const setDB = (dataset?: Partial&lt;DBType&gt;) =&gt; {
-  if (!dataset) { // если в функцию ничего не передано - то очищаем базу данных
-      db.posts = []
-      db.blogs = []
-      return
-  }
-&nbsp;
-  // если что-то передано - то заменяем старые значения новыми
-  db.posts = dataset.posts || <span class="branch-1 cbranch-no" title="branch not covered" >[]</span>
-  db.blogs = dataset.blogs || <span class="branch-1 cbranch-no" title="branch not covered" >[]</span>
-  // db.some = dataset.some || db.some
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// ...
+import {Router, Response, Request, NextFunction} from 'express'
+import {body, validationResult} from 'express-validator'
+import {blogRepository} from '../blogs/blogRepository'
+ 
+export const postRouter = Router()
+ 
+export const blogIdValidation = [
+    body('blogId').custom((blogId) =&gt; {
+        const blog = blogRepository.find(blogId)
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (!blog) { 
+<span class="cstat-no" title="statement not covered" >          new Error('no blog!') </span>
+<span class="cstat-no" title="statement not covered" >          return false</span>
+        }
+        return true
+    }),
+]
+ 
+export const inputCheckErrorsMiddleware = (req: Request, res: Response, next: NextFunction) =&gt; {
+    const errors = validationResult(req);
+    console.log('inputCheckErrorsMiddleware errors: ', errors)
+    if (errors.isEmpty()) {
+      next();
+    }
+    res.status(400).json(errors.array());
+<span class="cstat-no" title="statement not covered" >    return;</span>
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->

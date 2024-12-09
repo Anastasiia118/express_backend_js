@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { blogRepository } from "./blogRepository";
-import { body, param, query, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 
 export const blogsRouter = Router();
 

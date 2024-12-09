@@ -1,5 +1,5 @@
 import { setDB, db } from '../src/db/db'
-import { BlogDBType, CreateBlogType } from '../src/db/blog_types'
+import { BlogDBType } from '../src/db/blog_types'
 import { req } from './test-helpers'
 import {dataset1} from './datasets'
 import { SETTINGS } from '../src/settings'
@@ -56,7 +56,6 @@ describe(SETTINGS.PATH.BLOGS + '/', () => {
             description: 'Description 1 Updated',
             websiteUrl: 'https://blog1.com'
         }
-        console.log('test blogs: ', db.blogs)
         const response = await req.put(`${SETTINGS.PATH.BLOGS}/1`).send(updatedBlog)
         expect(response.status).toBe(200)
         expect(db.blogs).toContainEqual(updatedBlog)

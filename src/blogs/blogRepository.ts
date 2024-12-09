@@ -3,7 +3,6 @@ import { db } from '../db/db'
 
 export const blogRepository = {
   create(input: CreateBlogType): { error?: string, id?: string } {
-
     const newBlog: BlogDBType = {
       ...input,
       id: Math.random().toString(36).substring(2, 12),
@@ -31,7 +30,6 @@ export const blogRepository = {
   },
   update(input: Partial<BlogDBType>, id: String): { error?: string, id?: string } {
     const blog = db.blogs.find(b => b.id === id)
-    console.log('repository blog: ', blog)
     if (!blog) {
       return { error: 'Blog not found' }
     }
@@ -46,7 +44,6 @@ export const blogRepository = {
       // log
       return { error: e.message }
     }
-    console.log('repository updated blog: ', blog)
     return blog;
   },
   delete(id: string): { error?: string, id?: string } {
