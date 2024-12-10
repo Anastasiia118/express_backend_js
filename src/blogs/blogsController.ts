@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { blogRepository } from "./blogRepository";
-import { body, param, validationResult } from "express-validator";
+import { body, param } from "express-validator";
+import { inputCheckErrorsMiddleware } from "./middlewares";
 
 export const blogsRouter = Router();
 
@@ -14,11 +15,8 @@ export const blogController = {
     res.status(200).json(blogs);
   },
   createBlog: (req: Request, res: Response) => {
-    if (validationResult(req).isEmpty()) {
-      const result = blogRepository.create(req.body);
-      res.status(201).json(result);
-    }
-    res.status(400).json(validationResult(req).array());
+    const result = blogRepository.create(req.body);
+    res.status(201).json(result);
   },
   getBlogById: (req: Request, res: Response) => {
     const blog = blogRepository.findForOutput(req.params.id);
@@ -29,22 +27,16 @@ export const blogController = {
     res.status(200).json(blog);
   },
   updateBlog: (req: Request, res: Response) => {
-    if (validationResult(req).isEmpty()) {
-      const result = blogRepository.update(req.body, req.params.id as string);
-      res.status(200).json(result);
-    }
-    res.status(400).json(validationResult(req).array());
+    const result = blogRepository.update(req.body, req.params.id as string);
+    res.status(200).json(result);
   },
   deleteBlog: (req: Request, res: Response) => {
-    if (validationResult(req).isEmpty()) {
-      const result = blogRepository.delete(req.params.id as string);
-      if (result.error) {
-        res.status(404).json(result);
-        return;
-      }
-      res.status(204).json(result);
+    const result = blogRepository.delete(req.params.id as string);
+    if (result.error) {
+      res.status(404).json(result);
+      return;
     }
-    res.status(400).json(validationResult(req).array());
+    res.status(204).json(result);
   }
 };
 
@@ -67,6 +59,7 @@ blogsRouter.post(
     .isLength({ min: 3, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
+  inputCheckErrorsMiddleware,
   blogController.createBlog
 );
 blogsRouter.put(
@@ -95,6 +88,7 @@ blogsRouter.put(
     .isLength({ min: 3, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
+  inputCheckErrorsMiddleware, 
   blogController.updateBlog
 );
 blogsRouter.get("/:id", blogController.getBlogById);
@@ -104,4 +98,5 @@ blogsRouter.delete("/:id",
     .trim()
     .notEmpty()
     .withMessage("the id is required"),
+  inputCheckErrorsMiddleware, 
 blogController.deleteBlog);

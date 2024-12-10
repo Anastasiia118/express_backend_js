@@ -1,9 +1,8 @@
 // ...
-import {Router, Response, Request, NextFunction} from 'express'
+import { Response, Request, NextFunction} from 'express'
 import {body, validationResult} from 'express-validator'
 import {blogRepository} from '../blogs/blogRepository'
  
-export const postRouter = Router()
  
 export const blogIdValidation = [
     body('blogId').custom((blogId) => {
