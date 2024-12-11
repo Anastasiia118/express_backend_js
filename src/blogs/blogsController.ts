@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { blogRepository } from "./blogRepository";
 import { body, param } from "express-validator";
-import { inputCheckErrorsMiddleware } from "./middlewares";
+import { inputCheckErrorsMiddleware, authorizationMiddleware } from "../middlewares";
 
 export const blogsRouter = Router();
 
@@ -60,6 +60,7 @@ blogsRouter.post(
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
   inputCheckErrorsMiddleware,
+  authorizationMiddleware,
   blogController.createBlog
 );
 blogsRouter.put(
@@ -89,6 +90,7 @@ blogsRouter.put(
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
   inputCheckErrorsMiddleware, 
+  authorizationMiddleware,
   blogController.updateBlog
 );
 blogsRouter.get("/:id", blogController.getBlogById);
@@ -99,4 +101,5 @@ blogsRouter.delete("/:id",
     .notEmpty()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware, 
+  authorizationMiddleware,
 blogController.deleteBlog);

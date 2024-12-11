@@ -8,6 +8,7 @@ exports.SETTINGS = {
     PATH: {
         BLOGS: '/blogs',
         POSTS: '/posts',
-        TESTING: '/testing',
+        TESTING: '/testing/all-data',
     },
+    AUTHORIZATION: 'admin:qwerty',
 };

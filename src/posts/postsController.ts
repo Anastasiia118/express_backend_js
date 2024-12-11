@@ -1,7 +1,8 @@
 import { Request, Response, Router } from 'express';
 import { postRepository } from './postRepository';
-import { body, param, validationResult } from 'express-validator';
-import { inputCheckErrorsMiddleware, blogIdValidation } from './middlewares';
+import { body, param } from 'express-validator';
+import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware } from '../middlewares';
+import { db } from '../db/db';
 
 export const postsRouter = Router();
 
@@ -40,6 +41,11 @@ export const postController = {
       return;
     }
     res.status(204).json(result);
+  },
+  deleteAllDB: (req: Request, res: Response) => {
+    db.posts = []
+    db.blogs = []
+    res.sendStatus(204)
   }
 }
 
@@ -63,6 +69,7 @@ postsRouter.post(
     .withMessage('Content must be between 3 and 100 characters'),
   blogIdValidation,
   inputCheckErrorsMiddleware,
+  authorizationMiddleware,
   postController.createPost
 );
 postsRouter.get('/:id', postController.getPostById);
@@ -98,6 +105,7 @@ postsRouter.put(
     .notEmpty()
     .withMessage('Blog ID is required'),
   inputCheckErrorsMiddleware,
+  authorizationMiddleware,
   postController.updatePost
 );
 postsRouter.delete('/:id',
@@ -107,6 +115,7 @@ postsRouter.delete('/:id',
     .notEmpty()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware,
+  authorizationMiddleware,
   postController.deletePost
 );
 

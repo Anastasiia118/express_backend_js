@@ -9,6 +9,8 @@ describe(SETTINGS.PATH.BLOGS + '/', () => {
     beforeEach(async () => { 
       setDB(dataset1)
     })
+    const buff2 = Buffer.from(SETTINGS.AUTHORIZATION, 'utf8')
+    const auth = `Basic ${buff2.toString('base64')}`
 
     it('should get empty array', async () => {
       setDB()
@@ -44,7 +46,9 @@ describe(SETTINGS.PATH.BLOGS + '/', () => {
             websiteUrl: 'https://blog4.com'
         }
 
-        const response = await req.post(SETTINGS.PATH.BLOGS).send(newBlog)
+        const response = await req.post(SETTINGS.PATH.BLOGS)
+        .send(newBlog)
+        .set({'Authorization': auth})
         expect(response.status).toBe(201)
         expect(db.blogs).toContainEqual(expect.objectContaining(newBlog))
     })
@@ -57,12 +61,14 @@ describe(SETTINGS.PATH.BLOGS + '/', () => {
             websiteUrl: 'https://blog1.com'
         }
         const response = await req.put(`${SETTINGS.PATH.BLOGS}/1`).send(updatedBlog)
+        .set({'Authorization': auth})
         expect(response.status).toBe(200)
         expect(db.blogs).toContainEqual(updatedBlog)
     })
 
     it('should delete blog', async () => {
         const response = await req.delete(`${SETTINGS.PATH.BLOGS}/1`)
+        .set({'Authorization': auth})
         expect(response.status).toBe(204)
         expect(db.blogs).not.toContainEqual({ id: '1' })
     })

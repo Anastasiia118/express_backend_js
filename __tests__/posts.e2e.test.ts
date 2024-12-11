@@ -9,6 +9,9 @@ describe(SETTINGS.PATH.POSTS + "/", () => {
     setDB(dataset1);
   });
 
+  const buff2 = Buffer.from(SETTINGS.AUTHORIZATION, 'utf8')
+  const auth = `Basic ${buff2.toString('base64')}`
+
   it("should get empty array", async () => {
     setDB();
 
@@ -40,7 +43,9 @@ describe(SETTINGS.PATH.POSTS + "/", () => {
       content: "Content 4",
       blogId: "1",
     };
-    const response = await req.post(SETTINGS.PATH.POSTS).send(newPost);
+    const response = await req.post(SETTINGS.PATH.POSTS)
+    .send(newPost)
+    .set({'Authorization': auth});
     expect(response.status).toBe(201);
     expect(db.posts).toContainEqual(expect.objectContaining(newPost));
   });
@@ -51,12 +56,15 @@ describe(SETTINGS.PATH.POSTS + "/", () => {
       title: "Post 1 Updated",
       content: "Content 1 Updated",
     };
-    const response = await req.put(`${SETTINGS.PATH.POSTS}/1`).send(updatedPost);
+    const response = await req.put(`${SETTINGS.PATH.POSTS}/1`)
+    .send(updatedPost)
+    .set({'Authorization': auth});
     expect(response.status).toBe(200);
     expect(db.posts).toContainEqual(expect.objectContaining(updatedPost));
   });
   it("should delete post", async () => {
-    const response = await req.delete(`${SETTINGS.PATH.POSTS}/1`);
+    const response = await req.delete(`${SETTINGS.PATH.POSTS}/1`)
+    .set({'Authorization': auth});
     expect(response.status).toBe(204);
     expect(db.posts).not.toContainEqual(expect.objectContaining({ id: "1" }));
   });

@@ -13,7 +13,8 @@ const setDB = (dataset) => {
         return;
     }
     // если что-то передано - то заменяем старые значения новыми
-    exports.db.posts = dataset.posts || exports.db.posts;
+    exports.db.posts = dataset.posts || [];
+    exports.db.blogs = dataset.blogs || [];
     // db.some = dataset.some || db.some
 };
 exports.setDB = setDB;

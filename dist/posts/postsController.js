@@ -3,14 +3,93 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.postController = exports.postsRouter = void 0;
 const express_1 = require("express");
 const postRepository_1 = require("./postRepository");
+const express_validator_1 = require("express-validator");
+const middlewares_1 = require("../middlewares");
+const db_1 = require("../db/db");
 exports.postsRouter = (0, express_1.Router)();
 exports.postController = {
     getPosts: (req, res) => {
         const posts = postRepository_1.postRepository.getPosts();
-        if (posts.length === 0) {
-            return res.status(404).json({ error: 'No posts found' });
+        if (!posts.length) {
+            res.status(404).send('No videos found');
+            return;
         }
-        return res.status(200).json(posts);
+        res.status(200).json(posts);
     },
+    createPost: (req, res) => {
+        const body = req.body;
+        const result = postRepository_1.postRepository.create(body);
+        res.status(201).json(result);
+    },
+    getPostById: (req, res) => {
+        const post = postRepository_1.postRepository.findForOutput(req.params.id);
+        if (!post) {
+            res.status(404).send('Post not found');
+            return;
+        }
+        res.status(200).json(post);
+    },
+    updatePost: (req, res) => {
+        const body = req.body;
+        const result = postRepository_1.postRepository.update(body, req.params.id);
+        res.status(200).json(result);
+    },
+    deletePost: (req, res) => {
+        const result = postRepository_1.postRepository.delete(req.params.id);
+        if (result.error) {
+            res.status(404).json(result);
+            return;
+        }
+        res.status(204).json(result);
+    },
+    deleteAllDB: (req, res) => {
+        db_1.db.posts = [];
+        db_1.db.blogs = [];
+        res.sendStatus(204);
+    }
 };
 exports.postsRouter.get('/', exports.postController.getPosts);
+exports.postsRouter.post('/', (0, express_validator_1.body)('title')
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 30 })
+    .withMessage('Title must be between 3 and 30 characters'), (0, express_validator_1.body)('shortDescription')
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 100 })
+    .withMessage('Description must be between 3 and 100 characters'), (0, express_validator_1.body)('content')
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 100 })
+    .withMessage('Content must be between 3 and 100 characters'), middlewares_1.blogIdValidation, middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.postController.createPost);
+exports.postsRouter.get('/:id', exports.postController.getPostById);
+exports.postsRouter.put('/:id', (0, express_validator_1.param)("id")
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("the id is required"), (0, express_validator_1.body)('title')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 30 })
+    .withMessage('Title must be between 3 and 30 characters'), (0, express_validator_1.body)('shortDescription')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 100 })
+    .withMessage('Description must be between 3 and 100 characters'), (0, express_validator_1.body)('content')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 100 })
+    .withMessage('Content must be between 3 and 100 characters'), (0, express_validator_1.body)('blogId')
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Blog ID is required'), middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.postController.updatePost);
+exports.postsRouter.delete('/:id', (0, express_validator_1.param)("id")
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.postController.deletePost);

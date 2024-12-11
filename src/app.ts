@@ -1,8 +1,9 @@
 import express from 'express'
 import cors from 'cors'
 import {SETTINGS} from './settings'
-import {postsRouter} from './posts/postsController'
+import {postsRouter, postController} from './posts/postsController'
 import {blogsRouter} from './blogs/blogsController'
+
  
 export const app = express()
 
@@ -16,6 +17,5 @@ app.get('/', (req, res) => {
 
 app.use(SETTINGS.PATH.POSTS, postsRouter)
 app.use(SETTINGS.PATH.BLOGS, blogsRouter)
-app.use(SETTINGS.PATH.TESTING, (req, res) => {
-    res.status(200).json({message: 'Testing'})
-})
+app.delete(SETTINGS.PATH.TESTING, postController.deleteAllDB)
+
