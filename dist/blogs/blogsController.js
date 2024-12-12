@@ -20,16 +20,20 @@ exports.blogController = {
         res.status(201).json(result);
     },
     getBlogById: (req, res) => {
-        const blog = blogRepository_1.blogRepository.findForOutput(req.params.id);
-        if (!blog) {
-            res.status(404).send("Blog not found");
+        const result = blogRepository_1.blogRepository.findForOutput(req.params.id);
+        if (result.error) {
+            res.status(404).json(result);
             return;
         }
-        res.status(200).json(blog);
+        res.status(200).json(result);
     },
     updateBlog: (req, res) => {
         const result = blogRepository_1.blogRepository.update(req.body, req.params.id);
-        res.status(200).json(result);
+        if (result.error) {
+            res.status(404).json(result);
+            return;
+        }
+        res.status(204).json(result);
     },
     deleteBlog: (req, res) => {
         const result = blogRepository_1.blogRepository.delete(req.params.id);
@@ -41,7 +45,7 @@ exports.blogController = {
     }
 };
 exports.blogsRouter.get("/", exports.blogController.getBlogs);
-exports.blogsRouter.post("/", (0, express_validator_1.body)("name")
+exports.blogsRouter.post("/", middlewares_1.authorizationMiddleware, (0, express_validator_1.body)("name")
     .isString()
     .trim()
     .isLength({ min: 3, max: 15 })
@@ -54,8 +58,8 @@ exports.blogsRouter.post("/", (0, express_validator_1.body)("name")
     .trim()
     .isLength({ min: 3, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
-    .withMessage('Invalid URL'), middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.blogController.createBlog);
-exports.blogsRouter.put("/:id", (0, express_validator_1.param)("id")
+    .withMessage('Invalid URL'), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.createBlog);
+exports.blogsRouter.put("/:id", middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()
     .trim()
     .notEmpty()
@@ -63,22 +67,22 @@ exports.blogsRouter.put("/:id", (0, express_validator_1.param)("id")
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 15 })
+    .isLength({ min: 1, max: 15 })
     .withMessage("Name must be between 3 and 15 characters"), (0, express_validator_1.body)("description")
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 500 })
+    .isLength({ min: 1, max: 500 })
     .withMessage("Description must be between 3 and 500 characters"), (0, express_validator_1.body)("websiteUrl")
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
+    .isLength({ min: 1, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
-    .withMessage('Invalid URL'), middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.blogController.updateBlog);
+    .withMessage('Invalid URL'), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.updateBlog);
 exports.blogsRouter.get("/:id", exports.blogController.getBlogById);
-exports.blogsRouter.delete("/:id", (0, express_validator_1.param)("id")
+exports.blogsRouter.delete("/:id", middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()
     .trim()
     .notEmpty()
-    .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.blogController.deleteBlog);
+    .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.deleteBlog);

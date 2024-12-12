@@ -12,7 +12,7 @@ exports.blogRepository = {
             // log
             return { error: e.message };
         }
-        return { id: newBlog.id };
+        return newBlog;
     },
     find(id) {
         return db_1.db.blogs.find(p => p.id === id);
@@ -20,9 +20,9 @@ exports.blogRepository = {
     findForOutput(id) {
         const blog = this.find(id);
         if (!blog) {
-            return null;
+            return { error: 'Blog not found' };
         }
-        return this.mapToOutput(blog);
+        return blog;
     },
     getBlogs() {
         return db_1.db.blogs;

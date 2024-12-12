@@ -49,7 +49,7 @@ exports.postController = {
     }
 };
 exports.postsRouter.get('/', exports.postController.getPosts);
-exports.postsRouter.post('/', (0, express_validator_1.body)('title')
+exports.postsRouter.post('/', middlewares_1.authorizationMiddleware, (0, express_validator_1.body)('title')
     .isString()
     .trim()
     .isLength({ min: 3, max: 30 })
@@ -61,9 +61,9 @@ exports.postsRouter.post('/', (0, express_validator_1.body)('title')
     .isString()
     .trim()
     .isLength({ min: 3, max: 100 })
-    .withMessage('Content must be between 3 and 100 characters'), middlewares_1.blogIdValidation, middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.postController.createPost);
+    .withMessage('Content must be between 3 and 100 characters'), middlewares_1.blogIdValidation, middlewares_1.inputCheckErrorsMiddleware, exports.postController.createPost);
 exports.postsRouter.get('/:id', exports.postController.getPostById);
-exports.postsRouter.put('/:id', (0, express_validator_1.param)("id")
+exports.postsRouter.put('/:id', middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()
     .trim()
     .notEmpty()
@@ -71,25 +71,25 @@ exports.postsRouter.put('/:id', (0, express_validator_1.param)("id")
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 30 })
+    .isLength({ min: 1, max: 30 })
     .withMessage('Title must be between 3 and 30 characters'), (0, express_validator_1.body)('shortDescription')
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
+    .isLength({ min: 1, max: 100 })
     .withMessage('Description must be between 3 and 100 characters'), (0, express_validator_1.body)('content')
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
+    .isLength({ min: 1, max: 100 })
     .withMessage('Content must be between 3 and 100 characters'), (0, express_validator_1.body)('blogId')
     .optional()
     .isString()
     .trim()
     .notEmpty()
-    .withMessage('Blog ID is required'), middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.postController.updatePost);
-exports.postsRouter.delete('/:id', (0, express_validator_1.param)("id")
+    .withMessage('Blog ID is required'), middlewares_1.inputCheckErrorsMiddleware, exports.postController.updatePost);
+exports.postsRouter.delete('/:id', middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()
     .trim()
     .notEmpty()
-    .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, middlewares_1.authorizationMiddleware, exports.postController.deletePost);
+    .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, exports.postController.deletePost);

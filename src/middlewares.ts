@@ -22,7 +22,11 @@ export const inputCheckErrorsMiddleware = (req: Request, res: Response, next: Ne
     if (errors.isEmpty()) {
       next();
     }
-    res.status(400).json(errors.array());
+    const formattedErrors = errors.array().map(err => ({
+      message: err.msg,
+      field: err.type,
+    }));
+    res.status(400).json({ errorsMessages: formattedErrors });
     return;
 }
 

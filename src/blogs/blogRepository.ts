@@ -15,15 +15,17 @@ export const blogRepository = {
       return { error: e.message }
     }
 
-    return { id: newBlog.id }
+    return newBlog 
   },
   find(id: string): BlogDBType | undefined {
     return db.blogs.find(p => p.id === id)
   },
-  findForOutput(id: string): null | BlogOutputType {
+  findForOutput(id: string): { error?: string, id?: string } {
     const blog = this.find(id)
-    if (!blog) { return null }
-    return this.mapToOutput(blog)
+    if (!blog) { 
+      return { error: 'Blog not found' } 
+    }
+    return blog
   },
   getBlogs(): BlogDBType[] {
     return db.blogs

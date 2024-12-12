@@ -19,16 +19,20 @@ export const blogController = {
     res.status(201).json(result);
   },
   getBlogById: (req: Request, res: Response) => {
-    const blog = blogRepository.findForOutput(req.params.id);
-    if (!blog) {
-      res.status(404).send("Blog not found");
+    const result = blogRepository.findForOutput(req.params.id as string);
+    if (result.error) {
+      res.status(404).json(result);
       return;
     }
-    res.status(200).json(blog);
+    res.status(200).json(result);
   },
   updateBlog: (req: Request, res: Response) => {
     const result = blogRepository.update(req.body, req.params.id as string);
-    res.status(200).json(result);
+    if (result.error) {
+      res.status(404).json(result);
+      return;
+    }
+    res.status(204).json(result);
   },
   deleteBlog: (req: Request, res: Response) => {
     const result = blogRepository.delete(req.params.id as string);
@@ -43,6 +47,7 @@ export const blogController = {
 blogsRouter.get("/", blogController.getBlogs);
 blogsRouter.post(
   "/",
+  authorizationMiddleware,
   body("name")
     .isString()
     .trim()
@@ -60,11 +65,11 @@ blogsRouter.post(
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
   inputCheckErrorsMiddleware,
-  authorizationMiddleware,
   blogController.createBlog
 );
 blogsRouter.put(
   "/:id",
+  authorizationMiddleware,
   param("id")
     .isString()
     .trim()
@@ -74,32 +79,31 @@ blogsRouter.put(
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 15 })
+    .isLength({ min: 1, max: 15 })
     .withMessage("Name must be between 3 and 15 characters"),
   body("description")
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 500 })
+    .isLength({ min: 1, max: 500 })
     .withMessage("Description must be between 3 and 500 characters"),
   body("websiteUrl")
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
+    .isLength({ min: 1, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
   inputCheckErrorsMiddleware, 
-  authorizationMiddleware,
   blogController.updateBlog
 );
 blogsRouter.get("/:id", blogController.getBlogById);
 blogsRouter.delete("/:id", 
+  authorizationMiddleware,
   param("id")
     .isString()
     .trim()
     .notEmpty()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware, 
-  authorizationMiddleware,
 blogController.deleteBlog);

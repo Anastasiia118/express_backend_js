@@ -62,7 +62,7 @@ describe(SETTINGS.PATH.BLOGS + '/', () => {
         }
         const response = await req.put(`${SETTINGS.PATH.BLOGS}/1`).send(updatedBlog)
         .set({'Authorization': auth})
-        expect(response.status).toBe(200)
+        expect(response.status).toBe(204)
         expect(db.blogs).toContainEqual(updatedBlog)
     })
 

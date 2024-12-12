@@ -52,6 +52,7 @@ export const postController = {
 postsRouter.get('/', postController.getPosts);
 postsRouter.post(
   '/',
+  authorizationMiddleware,
   body('title')
     .isString()
     .trim()
@@ -69,12 +70,12 @@ postsRouter.post(
     .withMessage('Content must be between 3 and 100 characters'),
   blogIdValidation,
   inputCheckErrorsMiddleware,
-  authorizationMiddleware,
   postController.createPost
 );
 postsRouter.get('/:id', postController.getPostById);
 postsRouter.put(
   '/:id',
+  authorizationMiddleware,
   param("id")
     .isString()
     .trim()
@@ -84,19 +85,19 @@ postsRouter.put(
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 30 })
+    .isLength({ min: 1, max: 30 })
     .withMessage('Title must be between 3 and 30 characters'),
   body('shortDescription')
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
+    .isLength({ min: 1, max: 100 })
     .withMessage('Description must be between 3 and 100 characters'),
   body('content')
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
+    .isLength({ min: 1, max: 100 })
     .withMessage('Content must be between 3 and 100 characters'),
   body('blogId')
     .optional()
@@ -105,17 +106,16 @@ postsRouter.put(
     .notEmpty()
     .withMessage('Blog ID is required'),
   inputCheckErrorsMiddleware,
-  authorizationMiddleware,
   postController.updatePost
 );
 postsRouter.delete('/:id',
+  authorizationMiddleware,
   param("id")
     .isString()
     .trim()
     .notEmpty()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware,
-  authorizationMiddleware,
   postController.deletePost
 );
 
