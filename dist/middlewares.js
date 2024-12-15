@@ -20,10 +20,13 @@ const inputCheckErrorsMiddleware = (req, res, next) => {
     if (errors.isEmpty()) {
         next();
     }
-    const formattedErrors = errors.array().map(err => ({
-        message: err.msg,
-        field: err.type,
-    }));
+    const formattedErrors = errors.array({ onlyFirstError: true })
+        .map(err => {
+        return {
+            field: err.path,
+            message: err.msg
+        };
+    });
     res.status(400).json({ errorsMessages: formattedErrors });
     return;
 };

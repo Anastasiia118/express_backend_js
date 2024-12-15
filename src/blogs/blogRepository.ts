@@ -14,7 +14,6 @@ export const blogRepository = {
       // log
       return { error: e.message }
     }
-
     return newBlog 
   },
   find(id: string): BlogDBType | undefined {

@@ -22,17 +22,21 @@ exports.postController = {
         res.status(201).json(result);
     },
     getPostById: (req, res) => {
-        const post = postRepository_1.postRepository.findForOutput(req.params.id);
-        if (!post) {
-            res.status(404).send('Post not found');
+        const result = postRepository_1.postRepository.findForOutput(req.params.id);
+        if (result.error) {
+            res.status(404).json(result);
             return;
         }
-        res.status(200).json(post);
+        res.status(200).json(result);
     },
     updatePost: (req, res) => {
         const body = req.body;
         const result = postRepository_1.postRepository.update(body, req.params.id);
-        res.status(200).json(result);
+        if (result.error) {
+            res.status(404).json(result);
+            return;
+        }
+        res.status(204).json(result);
     },
     deletePost: (req, res) => {
         const result = postRepository_1.postRepository.delete(req.params.id);
@@ -52,41 +56,41 @@ exports.postsRouter.get('/', exports.postController.getPosts);
 exports.postsRouter.post('/', middlewares_1.authorizationMiddleware, (0, express_validator_1.body)('title')
     .isString()
     .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Title must be between 3 and 30 characters'), (0, express_validator_1.body)('shortDescription')
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Title must be between 1 and 30 characters'), (0, express_validator_1.body)('shortDescription')
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Description must be between 3 and 100 characters'), (0, express_validator_1.body)('content')
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Description must be between 1 and 100 characters'), (0, express_validator_1.body)('content')
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Content must be between 3 and 100 characters'), middlewares_1.blogIdValidation, middlewares_1.inputCheckErrorsMiddleware, exports.postController.createPost);
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Content must be between 1 and 100 characters'), middlewares_1.blogIdValidation, middlewares_1.inputCheckErrorsMiddleware, exports.postController.createPost);
 exports.postsRouter.get('/:id', exports.postController.getPostById);
 exports.postsRouter.put('/:id', middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()
     .trim()
     .notEmpty()
     .withMessage("the id is required"), (0, express_validator_1.body)('title')
-    .optional()
-    .isString()
-    .trim()
-    .isLength({ min: 1, max: 30 })
-    .withMessage('Title must be between 3 and 30 characters'), (0, express_validator_1.body)('shortDescription')
-    .optional()
-    .isString()
-    .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Description must be between 3 and 100 characters'), (0, express_validator_1.body)('content')
-    .optional()
-    .isString()
-    .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Content must be between 3 and 100 characters'), (0, express_validator_1.body)('blogId')
-    .optional()
     .isString()
     .trim()
     .notEmpty()
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Title must be between 1 and 30 characters'), (0, express_validator_1.body)('shortDescription')
+    .notEmpty()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Description must be between 1 and 100 characters'), (0, express_validator_1.body)('content')
+    .isString()
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('Content must be between 1 and 100 characters'), (0, express_validator_1.body)('blogId')
+    .isString()
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1, max: 15 })
     .withMessage('Blog ID is required'), middlewares_1.inputCheckErrorsMiddleware, exports.postController.updatePost);
 exports.postsRouter.delete('/:id', middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()

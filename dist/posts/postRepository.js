@@ -7,7 +7,7 @@ exports.postRepository = {
         const relatedBlog = db_1.db.blogs.find(b => b.id === input.blogId);
         const newPost = Object.assign(Object.assign({}, input), { id: Math.random().toString(36).substring(2, 12), blogName: (relatedBlog === null || relatedBlog === void 0 ? void 0 : relatedBlog.name) || '' });
         db_1.db.posts = [...db_1.db.posts, newPost];
-        return { id: newPost.id };
+        return newPost;
     },
     find(id) {
         return db_1.db.posts.find(p => p.id === id);
@@ -15,9 +15,9 @@ exports.postRepository = {
     findForOutput(id) {
         const post = this.find(id);
         if (!post) {
-            return null;
+            return { error: 'Post not found' };
         }
-        return this.mapToOutput(post);
+        return post;
     },
     getPosts() {
         return db_1.db.posts;

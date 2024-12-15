@@ -21,18 +21,21 @@ export const postController = {
     res.status(201).json(result);
   },
   getPostById: (req: Request, res: Response) => {
-    const post = postRepository.findForOutput(req.params.id);
-    if (!post) {
-      res.status(404).send('Post not found');
+    const result = postRepository.findForOutput(req.params.id as string);
+    if (result.error) {
+      res.status(404).json(result);
       return;
     }
-    res.status(200).json(post);
+    res.status(200).json(result);
   },
   updatePost: (req: Request, res: Response) => {
     const body = req.body;
     const result = postRepository.update(body, req.params.id as string);
-    
-    res.status(200).json(result);
+    if (result.error) {
+      res.status(404).json(result);
+      return;
+    }
+    res.status(204).json(result);
   },
   deletePost: (req: Request, res: Response) => {
     const result = postRepository.delete(req.params.id as string);
@@ -56,18 +59,18 @@ postsRouter.post(
   body('title')
     .isString()
     .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Title must be between 3 and 30 characters'),
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Title must be between 1 and 30 characters'),
   body('shortDescription')
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Description must be between 3 and 100 characters'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Description must be between 1 and 100 characters'),
   body('content')
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Content must be between 3 and 100 characters'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Content must be between 1 and 100 characters'),
   blogIdValidation,
   inputCheckErrorsMiddleware,
   postController.createPost
@@ -82,28 +85,28 @@ postsRouter.put(
     .notEmpty()
     .withMessage("the id is required"),
   body('title')
-    .optional()
-    .isString()
-    .trim()
-    .isLength({ min: 1, max: 30 })
-    .withMessage('Title must be between 3 and 30 characters'),
-  body('shortDescription')
-    .optional()
-    .isString()
-    .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Description must be between 3 and 100 characters'),
-  body('content')
-    .optional()
-    .isString()
-    .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Content must be between 3 and 100 characters'),
-  body('blogId')
-    .optional()
     .isString()
     .trim()
     .notEmpty()
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Title must be between 1 and 30 characters'),
+  body('shortDescription')
+    .notEmpty()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Description must be between 1 and 100 characters'),
+  body('content')
+    .isString()
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('Content must be between 1 and 100 characters'),
+  body('blogId')
+    .isString()
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1, max: 15 })
     .withMessage('Blog ID is required'),
   inputCheckErrorsMiddleware,
   postController.updatePost

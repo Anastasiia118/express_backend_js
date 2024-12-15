@@ -10,15 +10,17 @@ export const postRepository = {
       blogName: relatedBlog?.name || '',
     }
     db.posts = [...db.posts, newPost]
-    return { id: newPost.id }
+    return newPost
   },
   find(id: string): PostDBType | undefined {
     return db.posts.find(p => p.id === id)
   },
-  findForOutput(id: string): null | PostOutputType {
+  findForOutput(id: string): { error?: string, id?: string } {
     const post = this.find(id)
-    if (!post) { return null }
-    return this.mapToOutput(post)
+    if (!post) {
+      return {error : 'Post not found'}
+    }
+    return post
   },
   getPosts(): PostDBType[] {
     return db.posts

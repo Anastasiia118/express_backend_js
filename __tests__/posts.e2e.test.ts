@@ -59,7 +59,7 @@ describe(SETTINGS.PATH.POSTS + "/", () => {
     const response = await req.put(`${SETTINGS.PATH.POSTS}/1`)
     .send(updatedPost)
     .set({'Authorization': auth});
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(204);
     expect(db.posts).toContainEqual(expect.objectContaining(updatedPost));
   });
   it("should delete post", async () => {

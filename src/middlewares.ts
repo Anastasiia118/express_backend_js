@@ -3,6 +3,7 @@ import {body, validationResult} from 'express-validator'
 import {blogRepository} from './blogs/blogRepository'
 import {SETTINGS} from './settings'
 
+
  
  
 export const blogIdValidation = [
@@ -22,10 +23,13 @@ export const inputCheckErrorsMiddleware = (req: Request, res: Response, next: Ne
     if (errors.isEmpty()) {
       next();
     }
-    const formattedErrors = errors.array().map(err => ({
-      message: err.msg,
-      field: err.type,
-    }));
+    const formattedErrors = errors.array({ onlyFirstError: true })
+    .map(err => {
+        return {
+            field: err.path,
+            message: err.msg
+        }
+    });
     res.status(400).json({ errorsMessages: formattedErrors });
     return;
 }

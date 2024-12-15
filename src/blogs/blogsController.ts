@@ -51,17 +51,17 @@ blogsRouter.post(
   body("name")
     .isString()
     .trim()
-    .isLength({ min: 3, max: 15 })
-    .withMessage("Name must be between 3 and 15 characters"),
+    .isLength({ min: 1, max: 15 })
+    .withMessage("Name must be between 1 and 15 characters"),
   body("description")
     .isString()
     .trim()
-    .isLength({ min: 3, max: 500 })
-    .withMessage("Description must be between 3 and 500 characters"),
+    .isLength({ min: 1, max: 500 })
+    .withMessage("Description must be between 1 and 500 characters"),
   body("websiteUrl")
     .isString()
     .trim()
-    .isLength({ min: 3, max: 100 })
+    .isLength({ min: 1, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
   inputCheckErrorsMiddleware,
@@ -76,19 +76,19 @@ blogsRouter.put(
     .notEmpty()
     .withMessage("the id is required"),
   body("name")
-    .optional()
+    .notEmpty()
     .isString()
     .trim()
     .isLength({ min: 1, max: 15 })
-    .withMessage("Name must be between 3 and 15 characters"),
+    .withMessage("Name must be between 1 and 15 characters"),
   body("description")
-    .optional()
+    .notEmpty()
     .isString()
     .trim()
     .isLength({ min: 1, max: 500 })
-    .withMessage("Description must be between 3 and 500 characters"),
+    .withMessage("Description must be between 1 and 500 characters"),
   body("websiteUrl")
-    .optional()
+    .notEmpty()
     .isString()
     .trim()
     .isLength({ min: 1, max: 100 })
