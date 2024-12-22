@@ -55,6 +55,8 @@ describe(SETTINGS.PATH.POSTS + "/", () => {
       id: "1",
       title: "Post 1 Updated",
       content: "Content 1 Updated",
+      shortDescription: "Short description 1 Updated",
+      blogId: "1",
     };
     const response = await req.put(`${SETTINGS.PATH.POSTS}/1`)
     .send(updatedPost)
