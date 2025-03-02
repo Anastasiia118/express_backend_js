@@ -10,4 +10,5 @@ const startApp = async () => {
         console.log('...server started in port ' + SETTINGS.PORT)
     })
 }
- 
+
+startApp()

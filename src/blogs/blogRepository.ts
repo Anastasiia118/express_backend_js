@@ -2,7 +2,7 @@ import { BlogDBType, CreateBlogType, BlogOutputType } from '../db/blog_types'
 import { db } from '../db/db'
 
 export const blogRepository = {
-  create(input: CreateBlogType): { error?: string, id?: string } {
+  async create(input: CreateBlogType): Promise<{ error?: string; id?: string }> {
     const newBlog: BlogDBType = {
       ...input,
       id: Math.random().toString(36).substring(2, 12),
@@ -16,20 +16,20 @@ export const blogRepository = {
     }
     return newBlog 
   },
-  find(id: string): BlogDBType | undefined {
+  async find(id: string): Promise<BlogDBType | undefined> {
     return db.blogs.find(p => p.id === id)
   },
-  findForOutput(id: string): { error?: string, id?: string } {
-    const blog = this.find(id)
+  async findForOutput(id: string): Promise<{ error?: string; id?: string; }> {
+    const blog = await this.find(id)
     if (!blog) { 
       return { error: 'Blog not found' } 
     }
     return blog
   },
-  getBlogs(): BlogDBType[] {
+  async getBlogs(): Promise<BlogDBType[]> {
     return db.blogs
   },
-  update(input: Partial<BlogDBType>, id: String): { error?: string, id?: string } {
+  async update(input: Partial<BlogDBType>, id: String): Promise<{ error?: string; id?: string; }> {
     const blog = db.blogs.find(b => b.id === id)
     if (!blog) {
       return { error: 'Blog not found' }
@@ -47,7 +47,7 @@ export const blogRepository = {
     }
     return blog;
   },
-  delete(id: string): { error?: string, id?: string } {
+  async delete(id: string): Promise<{ error?: string, id?: string }> {
     const blog = db.blogs.find(b => b.id === id)
     if (!blog) {
       return { error: 'Blog not found' }
@@ -62,7 +62,7 @@ export const blogRepository = {
 
     return blog;
   },
-  mapToOutput(blog: BlogDBType): BlogOutputType {
+  async mapToOutput(blog: BlogDBType): Promise<BlogOutputType> {
     return {
       id: blog.id,
       name: blog.name,

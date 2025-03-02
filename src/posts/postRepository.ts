@@ -2,7 +2,7 @@ import { PostDBType, CreatePostType, PostOutputType } from '../db/post_types'
 import { db } from '../db/db'
 
 export const postRepository = {
-  create(input: CreatePostType): { error?: string, id?: string } {
+  async create(input: CreatePostType): Promise<{ error?: string; id?: string }> {
     const relatedBlog = db.blogs.find(b => b.id === input.blogId) 
     const newPost: PostDBType = {
       ...input,
@@ -12,20 +12,20 @@ export const postRepository = {
     db.posts = [...db.posts, newPost]
     return newPost
   },
-  find(id: string): PostDBType | undefined {
+  async find(id: string): Promise<PostDBType | undefined> {
     return db.posts.find(p => p.id === id)
   },
-  findForOutput(id: string): { error?: string, id?: string } {
-    const post = this.find(id)
+  async findForOutput(id: string): Promise<{ error?: string; id?: string; }> {
+    const post = await this.find(id)
     if (!post) {
       return {error : 'Post not found'}
     }
     return post
   },
-  getPosts(): PostDBType[] {
+  async getPosts(): Promise<PostDBType[]> {
     return db.posts
   },
-  update(input: Partial<PostDBType>, id: String): { error?: string, id?: string } {
+  async update(input: Partial<PostDBType>, id: String): Promise<{ error?: string; id?: string; }> {
     const post = db.posts.find(p => p.id === id)
     if (!post) {
       return { error: 'Post not found' }
@@ -43,7 +43,7 @@ export const postRepository = {
     }
     return post;
   },
-  delete(id: string): { error?: string, id?: string } {
+  async delete(id: string): Promise<{ error?: string; id?: string; }> {
     const post = db.posts.find(p => p.id === id)
     if (!post) {
       return { error: 'Post not found' }
@@ -57,7 +57,7 @@ export const postRepository = {
     }
     return post;
   },
-  mapToOutput(post: PostDBType): PostOutputType {
+  async mapToOutput(post: PostDBType): Promise<PostOutputType> {
     return {
       id: post.id,
       title: post.title,

@@ -7,45 +7,45 @@ import { db } from '../db/db';
 export const postsRouter = Router();
 
 export const postController = {
-  getPosts: (req: Request, res: Response) => {
-    const posts = postRepository.getPosts();
+  async getPosts(req: Request, res: Response) {
+    const posts = await postRepository.getPosts();
     if (!posts.length) {
       res.status(404).send('No videos found');
       return;
     }
     res.status(200).json(posts);
   },
-  createPost: (req: Request, res: Response) => {
+  async createPost(req: Request, res: Response) {
     const body = req.body;
-    const result = postRepository.create(body);
+    const result = await postRepository.create(body);
     res.status(201).json(result);
   },
-  getPostById: (req: Request, res: Response) => {
-    const result = postRepository.findForOutput(req.params.id as string);
+  async getPostById(req: Request, res: Response) {
+    const result = await postRepository.findForOutput(req.params.id as string);
     if (result.error) {
       res.status(404).json(result);
       return;
     }
     res.status(200).json(result);
   },
-  updatePost: (req: Request, res: Response) => {
+  async updatePost(req: Request, res: Response) {
     const body = req.body;
-    const result = postRepository.update(body, req.params.id as string);
+    const result = await postRepository.update(body, req.params.id as string);
     if (result.error) {
       res.status(404).json(result);
       return;
     }
     res.status(204).json(result);
   },
-  deletePost: (req: Request, res: Response) => {
-    const result = postRepository.delete(req.params.id as string);
+  async deletePost(req: Request, res: Response){
+    const result = await postRepository.delete(req.params.id as string);
     if (result.error) {
       res.status(404).json(result);
       return;
     }
     res.status(204).json(result);
   },
-  deleteAllDB: (req: Request, res: Response) => {
+  async deleteAllDB(req: Request, res: Response){
     db.posts = []
     db.blogs = []
     res.sendStatus(204)

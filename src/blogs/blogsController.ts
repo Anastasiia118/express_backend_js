@@ -6,36 +6,36 @@ import { inputCheckErrorsMiddleware, authorizationMiddleware } from "../middlewa
 export const blogsRouter = Router();
 
 export const blogController = {
-  getBlogs: (req: Request, res: Response) => {
-    const blogs = blogRepository.getBlogs();
+  async getBlogs(req: Request, res: Response) {
+    const blogs = await blogRepository.getBlogs();
     if (!blogs.length) {
       res.status(404).send("No blogs found");
       return;
     }
     res.status(200).json(blogs);
   },
-  createBlog: (req: Request, res: Response) => {
-    const result = blogRepository.create(req.body);
+  async createBlog(req: Request, res: Response) {
+    const result = await blogRepository.create(req.body);
     res.status(201).json(result);
   },
-  getBlogById: (req: Request, res: Response) => {
-    const result = blogRepository.findForOutput(req.params.id as string);
+  async getBlogById(req: Request, res: Response) {
+    const result = await blogRepository.findForOutput(req.params.id as string);
     if (result.error) {
       res.status(404).json(result);
       return;
     }
     res.status(200).json(result);
   },
-  updateBlog: (req: Request, res: Response) => {
-    const result = blogRepository.update(req.body, req.params.id as string);
+  async updateBlog(req: Request, res: Response) {
+    const result = await blogRepository.update(req.body, req.params.id as string);
     if (result.error) {
       res.status(404).json(result);
       return;
     }
     res.status(204).json(result);
   },
-  deleteBlog: (req: Request, res: Response) => {
-    const result = blogRepository.delete(req.params.id as string);
+  async deleteBlog(req: Request, res: Response) {
+    const result = await blogRepository.delete(req.params.id as string);
     if (result.error) {
       res.status(404).json(result);
       return;
