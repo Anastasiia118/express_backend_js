@@ -18,48 +18,90 @@ exports.blogsRouter = (0, express_1.Router)();
 exports.blogController = {
     getBlogs(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const blogs = yield blogRepository_1.blogRepository.getBlogs();
-            if (!blogs.length) {
-                res.status(404).send("No blogs found");
-                return;
+            try {
+                const blogs = yield blogRepository_1.blogRepository.getBlogs();
+                if (!blogs.length) {
+                    res.status(404).send("No blogs found");
+                    return;
+                }
+                res.status(200).json(blogs);
             }
-            res.status(200).json(blogs);
+            catch (error) {
+                res.status(500).json({ error: 'Failed to retrieve blogs' });
+            }
         });
     },
+    // async createBlog(req: Request, res: Response) {
+    //   const result = await blogRepository.create(req.body);
+    //   res.status(201).json(result);
+    // },
     createBlog(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield blogRepository_1.blogRepository.create(req.body);
-            res.status(201).json(result);
+            const newBlog = req.body;
+            try {
+                const createdBlog = yield blogRepository_1.blogRepository.create(newBlog);
+                res.status(201).json(createdBlog);
+            }
+            catch (error) {
+                res.status(500).json({ error: 'Failed to create blog' });
+            }
         });
     },
+    // async getBlogById(req: Request, res: Response) {
+    //   const result = await blogRepository.findForOutput(req.params.id as string);
+    //   if (result.error) {
+    //     res.status(404).json(result);
+    //     return;
+    //   }
+    //   res.status(200).json(result);
+    // },
     getBlogById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield blogRepository_1.blogRepository.findForOutput(req.params.id);
-            if (result.error) {
-                res.status(404).json(result);
-                return;
+            const id = req.params.id;
+            try {
+                const result = yield blogRepository_1.blogRepository.findForOutput(id);
+                if (result.error) {
+                    res.status(404).json(result);
+                    return;
+                }
+                res.status(200).json(result);
             }
-            res.status(200).json(result);
+            catch (error) {
+                res.status(500).json({ error: 'Failed to retrieve blog' });
+            }
         });
     },
     updateBlog(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield blogRepository_1.blogRepository.update(req.body, req.params.id);
-            if (result.error) {
-                res.status(404).json(result);
-                return;
+            const id = req.params.id;
+            const updateData = req.body;
+            try {
+                const result = yield blogRepository_1.blogRepository.update(updateData, id);
+                if (result.error) {
+                    res.status(404).json(result);
+                    return;
+                }
+                res.status(204).json(result);
             }
-            res.status(204).json(result);
+            catch (error) {
+                res.status(500).json({ error: 'Failed to update blog' });
+            }
         });
     },
     deleteBlog(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield blogRepository_1.blogRepository.delete(req.params.id);
-            if (result.error) {
-                res.status(404).json(result);
-                return;
+            const id = req.params.id;
+            try {
+                const result = yield blogRepository_1.blogRepository.delete(id);
+                if (result.error) {
+                    res.status(404).json(result);
+                    return;
+                }
+                res.status(204).json(result);
             }
-            res.status(204).json(result);
+            catch (error) {
+                res.status(500).json({ error: 'Failed to delete blog' });
+            }
         });
     }
 };

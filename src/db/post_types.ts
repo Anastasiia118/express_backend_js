@@ -1,5 +1,5 @@
 export interface PostDBType {
-  id: string;
+  id?: string;
   title: string;
   shortDescription: string;
   content: string;

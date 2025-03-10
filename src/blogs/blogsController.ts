@@ -2,45 +2,83 @@ import { Request, Response, Router } from "express";
 import { blogRepository } from "./blogRepository";
 import { body, param } from "express-validator";
 import { inputCheckErrorsMiddleware, authorizationMiddleware } from "../middlewares";
+import { BlogDBType } from "../db/blog_types";
 
 export const blogsRouter = Router();
 
 export const blogController = {
-  async getBlogs(req: Request, res: Response) {
-    const blogs = await blogRepository.getBlogs();
-    if (!blogs.length) {
-      res.status(404).send("No blogs found");
-      return;
+  async getBlogs(req: Request, res: Response): Promise<void> {
+    try {
+      const blogs = await blogRepository.getBlogs();
+      if (!blogs.length) {
+        res.status(404).send("No blogs found");
+        return;
+      }
+      res.status(200).json(blogs);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to retrieve blogs' });
     }
-    res.status(200).json(blogs);
   },
-  async createBlog(req: Request, res: Response) {
-    const result = await blogRepository.create(req.body);
-    res.status(201).json(result);
-  },
-  async getBlogById(req: Request, res: Response) {
-    const result = await blogRepository.findForOutput(req.params.id as string);
-    if (result.error) {
-      res.status(404).json(result);
-      return;
+  // async createBlog(req: Request, res: Response) {
+  //   const result = await blogRepository.create(req.body);
+  //   res.status(201).json(result);
+  // },
+  async createBlog(req: Request, res: Response): Promise<void> {
+    const newBlog: BlogDBType = req.body;
+    try {
+        const createdBlog = await blogRepository.create(newBlog);
+        res.status(201).json(createdBlog);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to create blog' });
     }
-    res.status(200).json(result);
   },
-  async updateBlog(req: Request, res: Response) {
-    const result = await blogRepository.update(req.body, req.params.id as string);
-    if (result.error) {
-      res.status(404).json(result);
-      return;
+  // async getBlogById(req: Request, res: Response) {
+  //   const result = await blogRepository.findForOutput(req.params.id as string);
+  //   if (result.error) {
+  //     res.status(404).json(result);
+  //     return;
+  //   }
+  //   res.status(200).json(result);
+  // },
+  async getBlogById(req: Request, res: Response): Promise<void> {
+    const id = req.params.id;
+    try {
+        const result = await blogRepository.findForOutput(id as string);
+        if (result.error) {
+          res.status(404).json(result);
+          return;
+        }
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve blog' });
     }
-    res.status(204).json(result);
   },
-  async deleteBlog(req: Request, res: Response) {
-    const result = await blogRepository.delete(req.params.id as string);
-    if (result.error) {
-      res.status(404).json(result);
-      return;
+  async updateBlog(req: Request, res: Response): Promise<void> {
+    const id = req.params.id;
+    const updateData: Partial<BlogDBType> = req.body;
+    try {
+      const result = await blogRepository.update(updateData, id as string);
+      if (result.error) {
+          res.status(404).json(result);
+          return;
+      }
+      res.status(204).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update blog' });
     }
-    res.status(204).json(result);
+  },
+  async deleteBlog(req: Request, res: Response): Promise<void> {
+    const id = req.params.id;
+    try {
+      const result = await blogRepository.delete(id);
+      if (result.error) {
+          res.status(404).json(result);
+          return;
+      }
+      res.status(204).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete blog' });
+    }
   }
 };
 

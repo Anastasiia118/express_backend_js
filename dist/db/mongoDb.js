@@ -80,3 +80,29 @@ function runDb(url) {
         }
     });
 }
+// export async function deleteDuplicates(url: string): Promise<void> {
+//     let client = new MongoClient(url);
+//     let db = client.db(SETTINGS.DB_NAME);
+//     blogsCollection = db.collection<BlogDBType>(SETTINGS.PATH.BLOGS);
+//     postsCollection = db.collection<PostDBType>(SETTINGS.PATH.POSTS);
+//     try {
+//         await client.connect();
+//         // Delete duplicate blogs
+//         const deleteBlogsResult = await blogsCollection.deleteMany({
+//             name: 'Blog 1',
+//             description: 'Description 1',
+//             websiteUrl: 'http://blog1.com'
+//         });
+//         console.log(`Deleted ${deleteBlogsResult.deletedCount} duplicate blogs.`);
+//         // Delete duplicate posts
+//         const deletePostsResult = await postsCollection.deleteMany({
+//             title: 'Post 1',
+//             shortDescription: 'Short description 1',
+//             content: 'Content 1',
+//             blogId: '1',
+//         });
+//         console.log(`Deleted ${deletePostsResult.deletedCount} duplicate posts.`);
+//     } finally {
+//         await client.close();
+//     }
+// }

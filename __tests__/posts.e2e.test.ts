@@ -3,10 +3,16 @@ import { PostDBType, CreatePostType } from "../src/db/post_types";
 import { req } from "./test-helpers";
 import { dataset1 } from "./datasets";
 import { SETTINGS } from "../src/settings";
+import { postsCollection } from "../src/db/mongoDb";
 
 describe(SETTINGS.PATH.POSTS + "/", () => {
   beforeEach(async () => {
-    setDB(dataset1);
+    await postsCollection.drop()
+    const info = await postsCollection.insertMany([
+      { id: '1', title: 'x1', blogId: '1', blogName: 'Blog 1', content: 'c1', shortDescription: 'sd1' },
+      { id: '2', title: 'x2', blogId: '2', blogName: 'Blog 2', content: 'c2', shortDescription: 'sd2' }
+    ])
+    
   });
 
   const buff2 = Buffer.from(SETTINGS.AUTHORIZATION, 'utf8')

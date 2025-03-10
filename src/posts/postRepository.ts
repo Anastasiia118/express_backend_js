@@ -1,19 +1,21 @@
 import { PostDBType, CreatePostType, PostOutputType } from '../db/post_types'
 import { db } from '../db/db'
+import { postsCollection } from '../db/mongoDb';
+import { ObjectId } from 'mongodb';
 
 export const postRepository = {
-  async create(input: CreatePostType): Promise<{ error?: string; id?: string }> {
+  async create(input: CreatePostType): Promise<{ error?: string; id: string; }> {
     const relatedBlog = db.blogs.find(b => b.id === input.blogId) 
     const newPost: PostDBType = {
       ...input,
-      id: Math.random().toString(36).substring(2, 12),
       blogName: relatedBlog?.name || '',
     }
-    db.posts = [...db.posts, newPost]
-    return newPost
+    const result  = await postsCollection.insertOne(newPost)
+    return {...newPost, id: result.insertedId.toString()}
   },
   async find(id: string): Promise<PostDBType | undefined> {
-    return db.posts.find(p => p.id === id)
+    const post = await postsCollection.findOne({ _id: new ObjectId(id) })
+    return post ? { ...post, id: post._id.toString() } : undefined
   },
   async findForOutput(id: string): Promise<{ error?: string; id?: string; }> {
     const post = await this.find(id)

@@ -11,18 +11,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRepository = void 0;
 const db_1 = require("../db/db");
+const mongoDb_1 = require("../db/mongoDb");
+const mongodb_1 = require("mongodb");
 exports.postRepository = {
     create(input) {
         return __awaiter(this, void 0, void 0, function* () {
             const relatedBlog = db_1.db.blogs.find(b => b.id === input.blogId);
-            const newPost = Object.assign(Object.assign({}, input), { id: Math.random().toString(36).substring(2, 12), blogName: (relatedBlog === null || relatedBlog === void 0 ? void 0 : relatedBlog.name) || '' });
-            db_1.db.posts = [...db_1.db.posts, newPost];
-            return newPost;
+            const newPost = Object.assign(Object.assign({}, input), { blogName: (relatedBlog === null || relatedBlog === void 0 ? void 0 : relatedBlog.name) || '' });
+            const result = yield mongoDb_1.postsCollection.insertOne(newPost);
+            return Object.assign(Object.assign({}, newPost), { id: result.insertedId.toString() });
         });
     },
     find(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return db_1.db.posts.find(p => p.id === id);
+            const post = yield mongoDb_1.postsCollection.findOne({ _id: new mongodb_1.ObjectId(id) });
+            return post ? Object.assign(Object.assign({}, post), { id: post._id.toString() }) : undefined;
         });
     },
     findForOutput(id) {
