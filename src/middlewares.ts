@@ -22,6 +22,7 @@ export const inputCheckErrorsMiddleware = (req: Request, res: Response, next: Ne
     console.log('inputCheckErrorsMiddleware errors: ', errors)
     if (errors.isEmpty()) {
       next();
+      return;
     }
     const formattedErrors = errors.array({ onlyFirstError: true })
     .map(err => {

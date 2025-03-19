@@ -58,20 +58,8 @@ function runDb(url) {
         try {
             yield client.connect();
             yield db.command({ ping: 1 });
-            // await blogsCollection.insertOne({
-            //   name: 'Blog 1',
-            //   description: 'Description 1',
-            //   websiteUrl: 'http://blog1.com'
-            // });
-            // await postsCollection.insertOne({
-            //   title: 'Post 1',
-            //   shortDescription: 'Short description 1',
-            //   content: 'Content 1',
-            //   blogId: '1',
-            //   blogName: ''
-            // });
             console.log("Pinged your deployment. You successfully connected to MongoDB!");
-            return true;
+            return client;
         }
         catch (e) {
             console.error(e);

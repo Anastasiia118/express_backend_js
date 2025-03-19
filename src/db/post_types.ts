@@ -1,15 +1,20 @@
 export interface PostDBType {
-  id?: string;
   title: string;
   shortDescription: string;
   content: string;
   blogId: string;
   blogName: string;
+  createdAt: string; 
 }
 
 export interface PostOutputType {
   id: string;
   title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
+  blogName: string;
+  createdAt: string;
 }
 
 export interface CreatePostType {

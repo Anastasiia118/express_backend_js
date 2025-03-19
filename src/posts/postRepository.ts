@@ -1,68 +1,73 @@
 import { PostDBType, CreatePostType, PostOutputType } from '../db/post_types'
 import { db } from '../db/db'
 import { postsCollection } from '../db/mongoDb';
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
+import { blogController } from '../blogs/blogsController';
+
+const getPostViewModel = (post: WithId<PostDBType>): PostOutputType => {
+  return {
+    id: post._id.toString(),
+    title: post.title,
+    shortDescription: post.shortDescription,
+    content: post.content,
+    blogId: post.blogId,
+    blogName: post.blogName,
+    createdAt: post.createdAt,
+  }
+}
 
 export const postRepository = {
-  async create(input: CreatePostType): Promise<{ error?: string; id: string; }> {
-    const relatedBlog = db.blogs.find(b => b.id === input.blogId) 
-    const newPost: PostDBType = {
-      ...input,
-      blogName: relatedBlog?.name || '',
+  async create(input: CreatePostType): Promise<{ error?: string; id?: string; }> {
+    const relatedBlog = await blogController.findBlog(input.blogId);
+    try {
+      const newPost: PostDBType = {
+        ...input,
+        createdAt: new Date().toISOString(),
+        blogName: relatedBlog?.name || 'Unknown',
+      };
+      const result = await postsCollection.insertOne({...newPost});
+      const insertedId = result.insertedId.toString();
+      const post = { ...newPost, id: insertedId }
+      return post;
+    } catch (e: any) {
+      return { error: e.message };
     }
-    const result  = await postsCollection.insertOne(newPost)
-    return {...newPost, id: result.insertedId.toString()}
   },
-  async find(id: string): Promise<PostDBType | undefined> {
+  async find(id: string): Promise<WithId<PostDBType> | undefined> {
     const post = await postsCollection.findOne({ _id: new ObjectId(id) })
-    return post ? { ...post, id: post._id.toString() } : undefined
+    return post ? post : undefined
   },
   async findForOutput(id: string): Promise<{ error?: string; id?: string; }> {
     const post = await this.find(id)
-    if (!post) {
+    if (!post || !ObjectId.isValid(id)) {
       return {error : 'Post not found'}
     }
-    return post
+    return getPostViewModel(post)
   },
-  async getPosts(): Promise<PostDBType[]> {
-    return db.posts
+  async getPosts(): Promise<PostOutputType[]> {
+    const posts = await postsCollection.find().toArray()
+    return posts.map(getPostViewModel)
   },
-  async update(input: Partial<PostDBType>, id: String): Promise<{ error?: string; id?: string; }> {
-    const post = db.posts.find(p => p.id === id)
-    if (!post) {
+  async update(input: Partial<PostDBType>, id: string): Promise<{ error?: string; id?: string; }> {
+    const result = await postsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: input }
+    )
+    if (result.matchedCount === 0) {
       return { error: 'Post not found' }
     }
-    const updatedPost = {
-      ...post,
-      ...input
-    }
-
-    try {
-      db.posts = db.posts.map(p => p.id === id ? updatedPost : p)
-    } catch (e: any) {
-      // log
-      return { error: e.message }
-    }
-    return post;
+    const updatedPost = await this.find(id);
+    return updatedPost ? { id: updatedPost._id.toString() } : { error: 'Post not found' }
   },
   async delete(id: string): Promise<{ error?: string; id?: string; }> {
-    const post = db.posts.find(p => p.id === id)
-    if (!post) {
-      return { error: 'Post not found' }
-    }
-
     try {
-      db.posts = db.posts.filter(p => p.id !== id)
-    } catch (e: any) {
-      // log
+      const result = await postsCollection.deleteOne({ _id: new ObjectId(id) })
+      if (result.deletedCount === 0) {
+        return { error: 'Post not found' }
+      }
+    } catch(e: any) {
       return { error: e.message }
     }
-    return post;
+    return { id };
   },
-  async mapToOutput(post: PostDBType): Promise<PostOutputType> {
-    return {
-      id: post.id,
-      title: post.title,
-    }
-  }
 }

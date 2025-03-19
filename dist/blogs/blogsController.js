@@ -31,10 +31,6 @@ exports.blogController = {
             }
         });
     },
-    // async createBlog(req: Request, res: Response) {
-    //   const result = await blogRepository.create(req.body);
-    //   res.status(201).json(result);
-    // },
     createBlog(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const newBlog = req.body;
@@ -47,14 +43,6 @@ exports.blogController = {
             }
         });
     },
-    // async getBlogById(req: Request, res: Response) {
-    //   const result = await blogRepository.findForOutput(req.params.id as string);
-    //   if (result.error) {
-    //     res.status(404).json(result);
-    //     return;
-    //   }
-    //   res.status(200).json(result);
-    // },
     getBlogById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.params.id;
@@ -69,6 +57,12 @@ exports.blogController = {
             catch (error) {
                 res.status(500).json({ error: 'Failed to retrieve blog' });
             }
+        });
+    },
+    findBlog(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blog = yield blogRepository_1.blogRepository.find(id);
+            return blog;
         });
     },
     updateBlog(req, res) {

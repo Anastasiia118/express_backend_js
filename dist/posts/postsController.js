@@ -14,7 +14,7 @@ const express_1 = require("express");
 const postRepository_1 = require("./postRepository");
 const express_validator_1 = require("express-validator");
 const middlewares_1 = require("../middlewares");
-const db_1 = require("../db/db");
+const mongoDb_1 = require("../db/mongoDb");
 exports.postsRouter = (0, express_1.Router)();
 exports.postController = {
     getPosts(req, res) {
@@ -48,6 +48,7 @@ exports.postController = {
         return __awaiter(this, void 0, void 0, function* () {
             const body = req.body;
             const result = yield postRepository_1.postRepository.update(body, req.params.id);
+            console.log('update post result: ', result);
             if (result.error) {
                 res.status(404).json(result);
                 return;
@@ -67,8 +68,8 @@ exports.postController = {
     },
     deleteAllDB(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            db_1.db.posts = [];
-            db_1.db.blogs = [];
+            yield mongoDb_1.postsCollection.deleteMany({});
+            yield mongoDb_1.blogsCollection.deleteMany({});
             res.sendStatus(204);
         });
     }
@@ -111,7 +112,7 @@ exports.postsRouter.put('/:id', middlewares_1.authorizationMiddleware, (0, expre
     .isString()
     .trim()
     .notEmpty()
-    .isLength({ min: 1, max: 15 })
+    .isLength({ min: 1, max: 100 })
     .withMessage('Blog ID is required'), middlewares_1.inputCheckErrorsMiddleware, exports.postController.updatePost);
 exports.postsRouter.delete('/:id', middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()

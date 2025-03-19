@@ -19,10 +19,6 @@ export const blogController = {
       res.status(500).json({ error: 'Failed to retrieve blogs' });
     }
   },
-  // async createBlog(req: Request, res: Response) {
-  //   const result = await blogRepository.create(req.body);
-  //   res.status(201).json(result);
-  // },
   async createBlog(req: Request, res: Response): Promise<void> {
     const newBlog: BlogDBType = req.body;
     try {
@@ -32,14 +28,6 @@ export const blogController = {
         res.status(500).json({ error: 'Failed to create blog' });
     }
   },
-  // async getBlogById(req: Request, res: Response) {
-  //   const result = await blogRepository.findForOutput(req.params.id as string);
-  //   if (result.error) {
-  //     res.status(404).json(result);
-  //     return;
-  //   }
-  //   res.status(200).json(result);
-  // },
   async getBlogById(req: Request, res: Response): Promise<void> {
     const id = req.params.id;
     try {
@@ -52,6 +40,10 @@ export const blogController = {
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve blog' });
     }
+  },
+  async findBlog(id: string): Promise<BlogDBType | undefined> {
+    const blog = await blogRepository.find(id);
+    return blog;
   },
   async updateBlog(req: Request, res: Response): Promise<void> {
     const id = req.params.id;

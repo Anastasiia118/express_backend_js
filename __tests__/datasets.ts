@@ -25,7 +25,6 @@ export const blogDataset: BlogDBType[] = [
 
 export const postDataset: PostDBType[] = [
   {
-    id: "1",
     title: "Post 1",
     shortDescription: "Short description 1",
     content: "Content 1",
@@ -33,7 +32,6 @@ export const postDataset: PostDBType[] = [
     blogName: "Blog 1",
   },
   {
-    id: "2",
     title: "Post 2",
     shortDescription: "Short description 2",
     content: "Content 2",
@@ -41,7 +39,6 @@ export const postDataset: PostDBType[] = [
     blogName: "Blog 2",
   },
   {
-    id: "3",
     title: "Post 3",
     shortDescription: "Short description 3",
     content: "Content 3",

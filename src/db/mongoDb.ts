@@ -10,7 +10,7 @@ export let blogsCollection: Collection<BlogDBType>
 export let postsCollection: Collection<PostDBType>
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-export async function runDb(url: string): Promise<boolean> {
+export async function runDb(url: string): Promise<MongoClient | false> {
     let client = new MongoClient(url);
     let db = client.db(SETTINGS.DB_NAME);
 
@@ -19,23 +19,9 @@ export async function runDb(url: string): Promise<boolean> {
     try {
         await client.connect();
         await db.command({ ping: 1 });
-
-        // await blogsCollection.insertOne({
-        //   name: 'Blog 1',
-        //   description: 'Description 1',
-        //   websiteUrl: 'http://blog1.com'
-        // });
-
-        // await postsCollection.insertOne({
-        //   title: 'Post 1',
-        //   shortDescription: 'Short description 1',
-        //   content: 'Content 1',
-        //   blogId: '1',
-        //   blogName: ''
-        // });
         
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
-        return true
+        return client
     } catch (e) {
         console.error(e)
         await client.close();

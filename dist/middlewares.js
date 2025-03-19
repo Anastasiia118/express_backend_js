@@ -19,6 +19,7 @@ const inputCheckErrorsMiddleware = (req, res, next) => {
     console.log('inputCheckErrorsMiddleware errors: ', errors);
     if (errors.isEmpty()) {
         next();
+        return;
     }
     const formattedErrors = errors.array({ onlyFirstError: true })
         .map(err => {

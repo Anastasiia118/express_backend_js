@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import { postRepository } from './postRepository';
 import { body, param } from 'express-validator';
 import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware } from '../middlewares';
-import { db } from '../db/db';
+import { blogsCollection, postsCollection } from '../db/mongoDb';
 
 export const postsRouter = Router();
 
@@ -31,6 +31,7 @@ export const postController = {
   async updatePost(req: Request, res: Response) {
     const body = req.body;
     const result = await postRepository.update(body, req.params.id as string);
+    console.log('update post result: ', result);
     if (result.error) {
       res.status(404).json(result);
       return;
@@ -46,8 +47,8 @@ export const postController = {
     res.status(204).json(result);
   },
   async deleteAllDB(req: Request, res: Response){
-    db.posts = []
-    db.blogs = []
+    await postsCollection.deleteMany({});
+    await blogsCollection.deleteMany({});
     res.sendStatus(204)
   }
 }
@@ -106,7 +107,7 @@ postsRouter.put(
     .isString()
     .trim()
     .notEmpty()
-    .isLength({ min: 1, max: 15 })
+    .isLength({ min: 1, max: 100 })
     .withMessage('Blog ID is required'),
   inputCheckErrorsMiddleware,
   postController.updatePost

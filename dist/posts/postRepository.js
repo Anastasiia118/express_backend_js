@@ -10,77 +10,79 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRepository = void 0;
-const db_1 = require("../db/db");
 const mongoDb_1 = require("../db/mongoDb");
 const mongodb_1 = require("mongodb");
+const blogsController_1 = require("../blogs/blogsController");
+const getPostViewModel = (post) => {
+    return {
+        id: post._id.toString(),
+        title: post.title,
+        shortDescription: post.shortDescription,
+        content: post.content,
+        blogId: post.blogId,
+        blogName: post.blogName,
+        createdAt: post.createdAt,
+    };
+};
 exports.postRepository = {
     create(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const relatedBlog = db_1.db.blogs.find(b => b.id === input.blogId);
-            const newPost = Object.assign(Object.assign({}, input), { blogName: (relatedBlog === null || relatedBlog === void 0 ? void 0 : relatedBlog.name) || '' });
-            const result = yield mongoDb_1.postsCollection.insertOne(newPost);
-            return Object.assign(Object.assign({}, newPost), { id: result.insertedId.toString() });
+            const relatedBlog = yield blogsController_1.blogController.findBlog(input.blogId);
+            try {
+                const newPost = Object.assign(Object.assign({}, input), { createdAt: new Date().toISOString(), blogName: (relatedBlog === null || relatedBlog === void 0 ? void 0 : relatedBlog.name) || 'Unknown' });
+                const result = yield mongoDb_1.postsCollection.insertOne(Object.assign({}, newPost));
+                const insertedId = result.insertedId.toString();
+                const post = Object.assign(Object.assign({}, newPost), { id: insertedId });
+                return post;
+            }
+            catch (e) {
+                return { error: e.message };
+            }
         });
     },
     find(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const post = yield mongoDb_1.postsCollection.findOne({ _id: new mongodb_1.ObjectId(id) });
-            return post ? Object.assign(Object.assign({}, post), { id: post._id.toString() }) : undefined;
+            return post ? post : undefined;
         });
     },
     findForOutput(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const post = yield this.find(id);
-            if (!post) {
+            if (!post || !mongodb_1.ObjectId.isValid(id)) {
                 return { error: 'Post not found' };
             }
-            return post;
+            return getPostViewModel(post);
         });
     },
     getPosts() {
         return __awaiter(this, void 0, void 0, function* () {
-            return db_1.db.posts;
+            const posts = yield mongoDb_1.postsCollection.find().toArray();
+            return posts.map(getPostViewModel);
         });
     },
     update(input, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const post = db_1.db.posts.find(p => p.id === id);
-            if (!post) {
+            const result = yield mongoDb_1.postsCollection.updateOne({ _id: new mongodb_1.ObjectId(id) }, { $set: input });
+            if (result.matchedCount === 0) {
                 return { error: 'Post not found' };
             }
-            const updatedPost = Object.assign(Object.assign({}, post), input);
-            try {
-                db_1.db.posts = db_1.db.posts.map(p => p.id === id ? updatedPost : p);
-            }
-            catch (e) {
-                // log
-                return { error: e.message };
-            }
-            return post;
+            const updatedPost = yield this.find(id);
+            return updatedPost ? { id: updatedPost._id.toString() } : { error: 'Post not found' };
         });
     },
     delete(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const post = db_1.db.posts.find(p => p.id === id);
-            if (!post) {
-                return { error: 'Post not found' };
-            }
             try {
-                db_1.db.posts = db_1.db.posts.filter(p => p.id !== id);
+                const result = yield mongoDb_1.postsCollection.deleteOne({ _id: new mongodb_1.ObjectId(id) });
+                if (result.deletedCount === 0) {
+                    return { error: 'Post not found' };
+                }
             }
             catch (e) {
-                // log
                 return { error: e.message };
             }
-            return post;
+            return { id };
         });
     },
-    mapToOutput(post) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return {
-                id: post.id,
-                title: post.title,
-            };
-        });
-    }
 };
