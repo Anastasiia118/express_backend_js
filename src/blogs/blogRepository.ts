@@ -21,11 +21,12 @@ export const blogRepository = {
     const newBlog: BlogDBType = {
       ...input,
       createdAt,
-      isMembership: true,
+      isMembership: false,
     };
     const result = await blogsCollection.insertOne(newBlog);
     const insertedId = result.insertedId.toString();
-    return { ...newBlog, id: insertedId };
+    const { _id, ...blogWithoutId } = newBlog;
+    return { ...blogWithoutId, id: insertedId };
   },
   async find(id: string): Promise<WithId<BlogDBType> | undefined> {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -40,7 +41,10 @@ export const blogRepository = {
   },
   async getBlogs(): Promise<BlogDBType[]> {
     const blogs = await blogsCollection.find().toArray();
-    return blogs.map(blog => ({ ...blog, id: blog._id.toString() }));
+    return blogs.map(blog => {
+      const { _id, ...blogWithoutId } = blog;
+      return { ...blogWithoutId, id: blog._id.toString() };
+    });
   },
   async update(input: Partial<BlogDBType>, id: string): Promise<{ error?: string; id?: string; }> {
     const result = await blogsCollection.updateOne(

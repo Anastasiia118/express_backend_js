@@ -27,7 +27,8 @@ export const postRepository = {
       };
       const result = await postsCollection.insertOne({...newPost});
       const insertedId = result.insertedId.toString();
-      const post = { ...newPost, id: insertedId }
+      const { _id, ...postWithoutId } = newPost;
+      const post = { ...postWithoutId, id: insertedId }
       return post;
     } catch (e: any) {
       return { error: e.message };

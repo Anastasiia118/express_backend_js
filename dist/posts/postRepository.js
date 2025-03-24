@@ -8,6 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRepository = void 0;
 const mongoDb_1 = require("../db/mongoDb");
@@ -32,7 +43,8 @@ exports.postRepository = {
                 const newPost = Object.assign(Object.assign({}, input), { createdAt: new Date().toISOString(), blogName: (relatedBlog === null || relatedBlog === void 0 ? void 0 : relatedBlog.name) || 'Unknown' });
                 const result = yield mongoDb_1.postsCollection.insertOne(Object.assign({}, newPost));
                 const insertedId = result.insertedId.toString();
-                const post = Object.assign(Object.assign({}, newPost), { id: insertedId });
+                const { _id } = newPost, postWithoutId = __rest(newPost, ["_id"]);
+                const post = Object.assign(Object.assign({}, postWithoutId), { id: insertedId });
                 return post;
             }
             catch (e) {

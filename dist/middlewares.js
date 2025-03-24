@@ -24,7 +24,7 @@ const inputCheckErrorsMiddleware = (req, res, next) => {
     const formattedErrors = errors.array({ onlyFirstError: true })
         .map(err => {
         return {
-            field: err.type,
+            field: err.path,
             message: err.msg
         };
     });
