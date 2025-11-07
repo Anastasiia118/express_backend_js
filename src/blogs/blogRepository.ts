@@ -1,7 +1,9 @@
-import { BlogDBType, CreateBlogType, BlogOutputType } from '../db/blog_types'
+import { query } from 'express-validator';
+import { BlogDBType, CreateBlogType, BlogOutputType } from '../types/blog_types'
 import { blogsCollection, postsCollection } from '../db/mongoDb'
 import { db } from '../db/db'
 import { ObjectId, WithId } from 'mongodb';
+import { BlogQueryInput } from '../types/blog_types';
 
 const getBlogViewModel = (blog: WithId<BlogDBType>): BlogOutputType => {
   return {
@@ -32,19 +34,47 @@ export const blogRepository = {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
     return blog ? blog : undefined;
   },
-  async findForOutput(id: string): Promise<{ error?: string; id?: string; }> {
+  async findForOutput(id: string): Promise<BlogOutputType | { error: string }> {
     const blog = await this.find(id)
     if (!blog || !ObjectId.isValid(id)) { 
       return { error: 'Blog not found' } 
     }
     return getBlogViewModel(blog);
   },
-  async getBlogs(): Promise<BlogDBType[]> {
-    const blogs = await blogsCollection.find().toArray();
-    return blogs.map(blog => {
-      const { _id, ...blogWithoutId } = blog;
-      return { ...blogWithoutId, id: blog._id.toString() };
-    });
+  async getBlogs(query: BlogQueryInput): Promise<{ blogs: BlogOutputType[]; totalCount: number }> {
+    const {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDirection,
+      searchBlogNameTerm,
+      searchBlogEmailTerm,
+      searchBlogWebsiteUrlTerm,
+    } = query;
+
+    const skip = (pageNumber - 1) * pageSize;
+    const filter: any = {};
+
+    if (searchBlogNameTerm) {
+      filter.name = { $regex: searchBlogNameTerm, $options: 'i' };
+    }
+    if (searchBlogEmailTerm) {
+      filter.email = { $regex: searchBlogEmailTerm, $options: 'i' };
+    }
+    if (searchBlogWebsiteUrlTerm) {
+      filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
+    }
+    const blogs = await blogsCollection
+      .find(filter)
+      .skip(skip)
+      .limit(pageSize)
+      .sort({ [sortBy]: sortDirection })
+      .toArray();
+    const totalCount = await blogsCollection.countDocuments(filter);
+    return {
+      blogs: blogs.map(blog => getBlogViewModel(blog)),
+      totalCount
+    };
   },
   async update(input: Partial<BlogDBType>, id: string): Promise<{ error?: string; id?: string; }> {
     const result = await blogsCollection.updateOne(

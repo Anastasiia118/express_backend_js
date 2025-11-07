@@ -1,11 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BlogSortField = exports.SortDirection = void 0;
-var SortDirection;
-(function (SortDirection) {
-    SortDirection["Asc"] = "asc";
-    SortDirection["Desc"] = "desc";
-})(SortDirection || (exports.SortDirection = SortDirection = {}));
+exports.BlogSortField = void 0;
 var BlogSortField;
 (function (BlogSortField) {
     BlogSortField["Name"] = "name";

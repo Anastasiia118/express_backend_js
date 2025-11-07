@@ -1,20 +1,53 @@
-import { Request, Response, Router } from "express";
+import { Request, RequestHandler, Response, Router } from "express";
 import { blogRepository } from "./blogRepository";
+import { blogsService } from "./application/blogsService";
 import { body, param } from "express-validator";
-import { inputCheckErrorsMiddleware, authorizationMiddleware } from "../middlewares";
-import { BlogDBType } from "../db/blog_types";
+import { inputCheckErrorsMiddleware, authorizationMiddleware, paginationAndSortingValidation } from "../middlewares";
+import { BlogDBType } from "../types/blog_types";
+import { matchedData } from 'express-validator';
+import { BlogQueryInput, BlogOutputType } from "../types/blog_types";
 
 export const blogsRouter = Router();
 
+const BlogSortFields = {
+  name: 'name',
+  createdAt: 'createdAt',
+  websiteUrl: 'websiteUrl'
+};
+
+export function mapToBlogsListPaginatedOutput(
+  blogs: BlogOutputType[],
+  meta: { totalCount: number; pageSize: number; pageNumber: number }
+) {
+  return {
+    meta: {
+      page: meta.pageNumber,
+      pageSize: meta.pageSize,
+      pageCount: Math.ceil(meta.totalCount / meta.pageSize),
+      totalCount: meta.totalCount,
+    },
+    data: blogs
+  };
+}
+
 export const blogController = {
-  async getBlogs(req: Request, res: Response): Promise<void> {
+  async getBlogs(
+    req: Request, 
+    res: Response
+  ) {
     try {
-      const blogs = await blogRepository.getBlogs();
-      if (!blogs.length) {
-        res.status(404).send("No blogs found");
-        return;
-      }
-      res.status(200).json(blogs);
+      const sanitizedQuery = matchedData<BlogQueryInput>(req, {
+         locations: ['query'] ,
+         includeOptionals: true
+      })
+      const { blogs, totalCount } = await blogsService.getAllBlogs(sanitizedQuery);
+      const blogsListOutput = mapToBlogsListPaginatedOutput(blogs, {
+        totalCount,
+        pageSize: sanitizedQuery.pageSize,
+        pageNumber: sanitizedQuery.pageNumber,
+      });
+     // res.status(200).json(blogsListOutput);
+      res.send(blogsListOutput);
     } catch (error) {
       res.status(500).json({ error: 'Failed to retrieve blogs' });
     }
@@ -22,7 +55,7 @@ export const blogController = {
   async createBlog(req: Request, res: Response): Promise<void> {
     const newBlog: BlogDBType = req.body;
     try {
-        const createdBlog = await blogRepository.create(newBlog);
+        const createdBlog = await blogsService.createBlog(newBlog);
         res.status(201).json(createdBlog);
     } catch (error) {
         res.status(500).json({ error: 'Failed to create blog' });
@@ -31,7 +64,7 @@ export const blogController = {
   async getBlogById(req: Request, res: Response): Promise<void> {
     const id = req.params.id;
     try {
-        const result = await blogRepository.findForOutput(id as string);
+        const result = await blogsService.getBlogById(id as string);
         if (result.error) {
           res.status(404).json(result);
           return;
@@ -74,7 +107,11 @@ export const blogController = {
   }
 };
 
-blogsRouter.get("/", blogController.getBlogs);
+blogsRouter.get("/", 
+  paginationAndSortingValidation(BlogSortFields),
+  inputCheckErrorsMiddleware,
+  blogController.getBlogs
+);
 blogsRouter.post(
   "/",
   authorizationMiddleware,

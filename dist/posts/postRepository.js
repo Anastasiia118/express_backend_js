@@ -23,7 +23,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRepository = void 0;
 const mongoDb_1 = require("../db/mongoDb");
 const mongodb_1 = require("mongodb");
-const blogsController_1 = require("../blogs/blogsController");
 const getPostViewModel = (post) => {
     return {
         id: post._id.toString(),
@@ -36,11 +35,10 @@ const getPostViewModel = (post) => {
     };
 };
 exports.postRepository = {
-    create(input) {
+    create(input, blogName) {
         return __awaiter(this, void 0, void 0, function* () {
-            const relatedBlog = yield blogsController_1.blogController.findBlog(input.blogId);
             try {
-                const newPost = Object.assign(Object.assign({}, input), { createdAt: new Date().toISOString(), blogName: (relatedBlog === null || relatedBlog === void 0 ? void 0 : relatedBlog.name) || 'Unknown' });
+                const newPost = Object.assign(Object.assign({}, input), { createdAt: new Date().toISOString(), blogName });
                 const result = yield mongoDb_1.postsCollection.insertOne(Object.assign({}, newPost));
                 const insertedId = result.insertedId.toString();
                 const { _id } = newPost, postWithoutId = __rest(newPost, ["_id"]);

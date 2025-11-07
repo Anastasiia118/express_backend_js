@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { PaginationAndSorting } from "./common_types";
 
 export interface BlogDBType {
   _id?: ObjectId;
@@ -23,3 +24,15 @@ export interface CreateBlogType {
   description: string;
   websiteUrl: string;
 }
+export enum BlogSortField {
+  Name = 'name',
+  CreatedAt = 'createdAt',
+  WebsiteUrl = 'websiteUrl',
+}
+
+export type BlogQueryInput = PaginationAndSorting<BlogSortField> & 
+ Partial<{
+    searchBlogNameTerm: string;
+    searchBlogEmailTerm: string;
+    searchBlogWebsiteUrlTerm: string;
+  }>;

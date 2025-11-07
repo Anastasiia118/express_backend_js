@@ -10,21 +10,46 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogController = exports.blogsRouter = void 0;
+exports.mapToBlogsListPaginatedOutput = mapToBlogsListPaginatedOutput;
 const express_1 = require("express");
 const blogRepository_1 = require("./blogRepository");
+const blogsService_1 = require("./application/blogsService");
 const express_validator_1 = require("express-validator");
 const middlewares_1 = require("../middlewares");
+const express_validator_2 = require("express-validator");
 exports.blogsRouter = (0, express_1.Router)();
+const BlogSortFields = {
+    name: 'name',
+    createdAt: 'createdAt',
+    websiteUrl: 'websiteUrl'
+};
+function mapToBlogsListPaginatedOutput(blogs, meta) {
+    return {
+        meta: {
+            page: meta.pageNumber,
+            pageSize: meta.pageSize,
+            pageCount: Math.ceil(meta.totalCount / meta.pageSize),
+            totalCount: meta.totalCount,
+        },
+        data: blogs
+    };
+}
 exports.blogController = {
     getBlogs(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const blogs = yield blogRepository_1.blogRepository.getBlogs();
-                if (!blogs.length) {
-                    res.status(404).send("No blogs found");
-                    return;
-                }
-                res.status(200).json(blogs);
+                const sanitizedQuery = (0, express_validator_2.matchedData)(req, {
+                    locations: ['query'],
+                    includeOptionals: true
+                });
+                const { blogs, totalCount } = yield blogsService_1.blogsService.getAllBlogs(sanitizedQuery);
+                const blogsListOutput = mapToBlogsListPaginatedOutput(blogs, {
+                    totalCount,
+                    pageSize: sanitizedQuery.pageSize,
+                    pageNumber: sanitizedQuery.pageNumber,
+                });
+                // res.status(200).json(blogsListOutput);
+                res.send(blogsListOutput);
             }
             catch (error) {
                 res.status(500).json({ error: 'Failed to retrieve blogs' });
@@ -35,7 +60,7 @@ exports.blogController = {
         return __awaiter(this, void 0, void 0, function* () {
             const newBlog = req.body;
             try {
-                const createdBlog = yield blogRepository_1.blogRepository.create(newBlog);
+                const createdBlog = yield blogsService_1.blogsService.createBlog(newBlog);
                 res.status(201).json(createdBlog);
             }
             catch (error) {
@@ -47,7 +72,7 @@ exports.blogController = {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.params.id;
             try {
-                const result = yield blogRepository_1.blogRepository.findForOutput(id);
+                const result = yield blogsService_1.blogsService.getBlogById(id);
                 if (result.error) {
                     res.status(404).json(result);
                     return;
@@ -99,7 +124,7 @@ exports.blogController = {
         });
     }
 };
-exports.blogsRouter.get("/", exports.blogController.getBlogs);
+exports.blogsRouter.get("/", (0, middlewares_1.paginationAndSortingValidation)(BlogSortFields), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.getBlogs);
 exports.blogsRouter.post("/", middlewares_1.authorizationMiddleware, (0, express_validator_1.body)("name")
     .isString()
     .trim()

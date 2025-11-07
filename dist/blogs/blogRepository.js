@@ -59,13 +59,31 @@ exports.blogRepository = {
             return getBlogViewModel(blog);
         });
     },
-    getBlogs() {
+    getBlogs(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            const blogs = yield mongoDb_1.blogsCollection.find().toArray();
-            return blogs.map(blog => {
-                const { _id } = blog, blogWithoutId = __rest(blog, ["_id"]);
-                return Object.assign(Object.assign({}, blogWithoutId), { id: blog._id.toString() });
-            });
+            const { pageNumber, pageSize, sortBy, sortDirection, searchBlogNameTerm, searchBlogEmailTerm, searchBlogWebsiteUrlTerm, } = query;
+            const skip = (pageNumber - 1) * pageSize;
+            const filter = {};
+            if (searchBlogNameTerm) {
+                filter.name = { $regex: searchBlogNameTerm, $options: 'i' };
+            }
+            if (searchBlogEmailTerm) {
+                filter.email = { $regex: searchBlogEmailTerm, $options: 'i' };
+            }
+            if (searchBlogWebsiteUrlTerm) {
+                filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
+            }
+            const blogs = yield mongoDb_1.blogsCollection
+                .find(filter)
+                .skip(skip)
+                .limit(pageSize)
+                .sort({ [sortBy]: sortDirection })
+                .toArray();
+            const totalCount = yield mongoDb_1.blogsCollection.countDocuments(filter);
+            return {
+                blogs: blogs.map(blog => getBlogViewModel(blog)),
+                totalCount
+            };
         });
     },
     update(input, id) {

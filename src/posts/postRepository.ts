@@ -1,4 +1,4 @@
-import { PostDBType, CreatePostType, PostOutputType } from '../db/post_types'
+import { PostDBType, CreatePostType, PostOutputType } from '../types/post_types'
 import { db } from '../db/db'
 import { postsCollection } from '../db/mongoDb';
 import { ObjectId, WithId } from 'mongodb';
@@ -17,15 +17,14 @@ const getPostViewModel = (post: WithId<PostDBType>): PostOutputType => {
 }
 
 export const postRepository = {
-  async create(input: CreatePostType): Promise<{ error?: string; id?: string; }> {
-    const relatedBlog = await blogController.findBlog(input.blogId);
+  async create(input: CreatePostType, blogName: string): Promise<{ error?: string; id?: string; }> {
     try {
       const newPost: PostDBType = {
         ...input,
         createdAt: new Date().toISOString(),
-        blogName: relatedBlog?.name || 'Unknown',
+        blogName
       };
-      const result = await postsCollection.insertOne({...newPost});
+      const result = await postsCollection.insertOne({ ...newPost });
       const insertedId = result.insertedId.toString();
       const { _id, ...postWithoutId } = newPost;
       const post = { ...postWithoutId, id: insertedId }
@@ -41,7 +40,7 @@ export const postRepository = {
   async findForOutput(id: string): Promise<{ error?: string; id?: string; }> {
     const post = await this.find(id)
     if (!post || !ObjectId.isValid(id)) {
-      return {error : 'Post not found'}
+      return { error: 'Post not found' }
     }
     return getPostViewModel(post)
   },
@@ -66,7 +65,7 @@ export const postRepository = {
       if (result.deletedCount === 0) {
         return { error: 'Post not found' }
       }
-    } catch(e: any) {
+    } catch (e: any) {
       return { error: e.message }
     }
     return { id };

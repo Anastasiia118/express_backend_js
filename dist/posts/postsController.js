@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postController = exports.postsRouter = void 0;
 const express_1 = require("express");
-const postRepository_1 = require("./postRepository");
+const postsService_1 = require("./application/postsService");
 const express_validator_1 = require("express-validator");
 const middlewares_1 = require("../middlewares");
 const mongoDb_1 = require("../db/mongoDb");
@@ -19,7 +19,7 @@ exports.postsRouter = (0, express_1.Router)();
 exports.postController = {
     getPosts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const posts = yield postRepository_1.postRepository.getPosts();
+            const posts = yield postsService_1.postsService.getAllPosts();
             if (!posts.length) {
                 res.status(404).send('No videos found');
                 return;
@@ -30,13 +30,13 @@ exports.postController = {
     createPost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const body = req.body;
-            const result = yield postRepository_1.postRepository.create(body);
+            const result = yield postsService_1.postsService.createPost(body);
             res.status(201).json(result);
         });
     },
     getPostById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield postRepository_1.postRepository.findForOutput(req.params.id);
+            const result = yield postsService_1.postsService.getPostById(req.params.id);
             if (result.error) {
                 res.status(404).json(result);
                 return;
@@ -47,8 +47,7 @@ exports.postController = {
     updatePost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const body = req.body;
-            const result = yield postRepository_1.postRepository.update(body, req.params.id);
-            console.log('update post result: ', result);
+            const result = yield postsService_1.postsService.updatePost(req.params.id, body);
             if (result.error) {
                 res.status(404).json(result);
                 return;
@@ -58,7 +57,7 @@ exports.postController = {
     },
     deletePost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield postRepository_1.postRepository.delete(req.params.id);
+            const result = yield postsService_1.postsService.deletePost(req.params.id);
             if (result.error) {
                 res.status(404).json(result);
                 return;
