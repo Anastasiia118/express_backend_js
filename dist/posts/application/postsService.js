@@ -27,9 +27,9 @@ exports.postsService = {
             return yield postRepository_1.postRepository.findForOutput(id);
         });
     },
-    getAllPosts() {
+    getAllPosts(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield postRepository_1.postRepository.getPosts();
+            return yield postRepository_1.postRepository.getPosts(query);
         });
     },
     updatePost(id, input) {

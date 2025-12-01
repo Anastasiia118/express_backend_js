@@ -1,19 +1,58 @@
 import { Request, Response, Router } from 'express';
 import { postsService } from './application/postsService';
-import { body, param } from 'express-validator';
-import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware } from '../middlewares';
+import { body, matchedData, param } from 'express-validator';
+import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware, paginationAndSortingValidation } from '../middlewares';
 import { blogsCollection, postsCollection } from '../db/mongoDb';
+import { PostOutputType, PostQueryInput } from '../types/post_types';
+
 
 export const postsRouter = Router();
 
+const PostSortFields = {
+  title: 'title',
+  createdAt: 'createdAt',
+  blogName: 'blogName'
+}
+
+export function mapToPostsListPaginatedOutput(
+  posts: PostOutputType[],
+  meta: { totalCount: number; pageSize: number; pageNumber: number }
+) {
+  return {
+    meta: {
+      page: meta.pageNumber,
+      pageSize: meta.pageSize,
+      pageCount: Math.ceil(meta.totalCount / meta.pageSize),
+      totalCount: meta.totalCount,
+    },
+    data: posts
+  };
+}
+
 export const postController = {
   async getPosts(req: Request, res: Response) {
-    const posts = await postsService.getAllPosts();
-    if (!posts.length) {
-      res.status(404).send('No videos found');
-      return;
+    try {
+      const sanitizedQuery = matchedData<PostQueryInput>(req, {
+          locations: ['query'] ,
+          includeOptionals: true,
+      })
+      const {posts, totalCount} = await postsService.getAllPosts(sanitizedQuery);
+      const postsListOutput = mapToPostsListPaginatedOutput(posts, {
+        totalCount,
+        pageSize: sanitizedQuery.pageSize,
+        pageNumber: sanitizedQuery.pageNumber,
+      });
+      res.send(postsListOutput);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to retrieve posts' }
+      )
     }
-    res.status(200).json(posts);
+    // const posts = await postsService.getAllPosts();
+    // if (!posts.length) {
+    //   res.status(404).send('No videos found');
+    //   return;
+    // }
+    // res.status(200).json(posts);
   },
   async createPost(req: Request, res: Response) {
     const body = req.body;
@@ -52,7 +91,11 @@ export const postController = {
   }
 }
 
-postsRouter.get('/', postController.getPosts);
+postsRouter.get('/', 
+  paginationAndSortingValidation(PostSortFields),
+  inputCheckErrorsMiddleware,
+  postController.getPosts
+);
 postsRouter.post(
   '/',
   authorizationMiddleware,

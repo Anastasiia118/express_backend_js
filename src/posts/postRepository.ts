@@ -1,4 +1,5 @@
-import { PostDBType, CreatePostType, PostOutputType } from '../types/post_types'
+import { query } from 'express-validator';
+import { PostDBType, CreatePostType, PostOutputType, PostQueryInput } from '../types/post_types'
 import { db } from '../db/db'
 import { postsCollection } from '../db/mongoDb';
 import { ObjectId, WithId } from 'mongodb';
@@ -44,9 +45,36 @@ export const postRepository = {
     }
     return getPostViewModel(post)
   },
-  async getPosts(): Promise<PostOutputType[]> {
-    const posts = await postsCollection.find().toArray()
-    return posts.map(getPostViewModel)
+  async getPosts(query: PostQueryInput): Promise<{ posts: PostOutputType[]; totalCount: number }> {
+    const {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDirection,
+      searchTitleTerm,
+      searchBlogNameTerm,
+    } = query;
+
+    const skip = (pageNumber - 1) * pageSize;
+    const filter: any = {};
+    
+    if (searchTitleTerm) {
+      filter.title = { $regex: searchTitleTerm, $options: 'i' };
+    }
+    if (searchBlogNameTerm) {
+      filter.blogName = { $regex: searchBlogNameTerm, $options: 'i' };
+    }
+    const posts = await postsCollection
+      .find(filter)
+      .skip(skip)
+      .limit(pageSize)
+      .sort({ [sortBy]: sortDirection })
+      .toArray();
+    const totalCount = await postsCollection.countDocuments(filter);
+    return { 
+      posts: posts.map(post =>getPostViewModel(post)), 
+      totalCount 
+    };
   },
   async update(input: Partial<PostDBType>, id: string): Promise<{ error?: string; id?: string; }> {
     const result = await postsCollection.updateOne(

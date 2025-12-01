@@ -1,5 +1,5 @@
 import { postRepository } from '../postRepository';
-import { PostDBType, CreatePostType, PostOutputType } from '../../types/post_types'
+import { PostDBType, CreatePostType, PostOutputType, PostQueryInput } from '../../types/post_types'
 import { blogRepository } from '../../blogs/blogRepository';
 
 export const postsService = {
@@ -13,8 +13,8 @@ export const postsService = {
     async getPostById(id: string): Promise<{ error?: string; id?: string; }> {
         return await postRepository.findForOutput(id);
     },
-    async getAllPosts(): Promise<PostOutputType[]> {
-        return await postRepository.getPosts();
+    async getAllPosts(query: PostQueryInput): Promise<{ posts: PostOutputType[]; totalCount: number }> {
+        return await postRepository.getPosts(query);
     },
     async updatePost(id: string, input: Partial<PostDBType>): Promise<{ error?: string; id?: string; }> {
         return await postRepository.update(input, id);

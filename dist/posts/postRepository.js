@@ -65,10 +65,28 @@ exports.postRepository = {
             return getPostViewModel(post);
         });
     },
-    getPosts() {
+    getPosts(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            const posts = yield mongoDb_1.postsCollection.find().toArray();
-            return posts.map(getPostViewModel);
+            const { pageNumber, pageSize, sortBy, sortDirection, searchTitleTerm, searchBlogNameTerm, } = query;
+            const skip = (pageNumber - 1) * pageSize;
+            const filter = {};
+            if (searchTitleTerm) {
+                filter.title = { $regex: searchTitleTerm, $options: 'i' };
+            }
+            if (searchBlogNameTerm) {
+                filter.blogName = { $regex: searchBlogNameTerm, $options: 'i' };
+            }
+            const posts = yield mongoDb_1.postsCollection
+                .find(filter)
+                .skip(skip)
+                .limit(pageSize)
+                .sort({ [sortBy]: sortDirection })
+                .toArray();
+            const totalCount = yield mongoDb_1.postsCollection.countDocuments(filter);
+            return {
+                posts: posts.map(post => getPostViewModel(post)),
+                totalCount
+            };
         });
     },
     update(input, id) {

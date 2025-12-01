@@ -10,21 +10,54 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postController = exports.postsRouter = void 0;
+exports.mapToPostsListPaginatedOutput = mapToPostsListPaginatedOutput;
 const express_1 = require("express");
 const postsService_1 = require("./application/postsService");
 const express_validator_1 = require("express-validator");
 const middlewares_1 = require("../middlewares");
 const mongoDb_1 = require("../db/mongoDb");
 exports.postsRouter = (0, express_1.Router)();
+const PostSortFields = {
+    title: 'title',
+    createdAt: 'createdAt',
+    blogName: 'blogName'
+};
+function mapToPostsListPaginatedOutput(posts, meta) {
+    return {
+        meta: {
+            page: meta.pageNumber,
+            pageSize: meta.pageSize,
+            pageCount: Math.ceil(meta.totalCount / meta.pageSize),
+            totalCount: meta.totalCount,
+        },
+        data: posts
+    };
+}
 exports.postController = {
     getPosts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const posts = yield postsService_1.postsService.getAllPosts();
-            if (!posts.length) {
-                res.status(404).send('No videos found');
-                return;
+            try {
+                const sanitizedQuery = (0, express_validator_1.matchedData)(req, {
+                    locations: ['query'],
+                    includeOptionals: true,
+                });
+                const { posts, totalCount } = yield postsService_1.postsService.getAllPosts(sanitizedQuery);
+                const postsListOutput = mapToPostsListPaginatedOutput(posts, {
+                    totalCount,
+                    pageSize: sanitizedQuery.pageSize,
+                    pageNumber: sanitizedQuery.pageNumber,
+                });
+                res.send(postsListOutput);
             }
-            res.status(200).json(posts);
+            catch (error) {
+                res.status(500).json({ error: 'Failed to retrieve posts' });
+            }
+            // const posts = await postsService.getAllPosts();
+            // if (!posts.length) {
+            //   res.status(404).send('No videos found');
+            //   return;
+            // }
+            // res.status(200).json(posts);
         });
     },
     createPost(req, res) {
@@ -73,7 +106,7 @@ exports.postController = {
         });
     }
 };
-exports.postsRouter.get('/', exports.postController.getPosts);
+exports.postsRouter.get('/', (0, middlewares_1.paginationAndSortingValidation)(PostSortFields), middlewares_1.inputCheckErrorsMiddleware, exports.postController.getPosts);
 exports.postsRouter.post('/', middlewares_1.authorizationMiddleware, (0, express_validator_1.body)('title')
     .isString()
     .trim()
