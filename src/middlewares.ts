@@ -7,6 +7,7 @@ import { SortDirection } from './types/common_types';
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_SORT_DIRECTION = SortDirection.DESC;
+const DEFAULT_SORT_BY = 'createdAt';
 
 export function paginationAndSortingValidation<T extends string>(sortFieldsEnum: Record<string, T>) {//Record<string, T> - тип объекта, где ключи типа string, значения типа Т
   return [
@@ -23,7 +24,7 @@ export function paginationAndSortingValidation<T extends string>(sortFieldsEnum:
       .toInt(),
  
     query('sortBy')
-      .default(Object.values(sortFieldsEnum)[0]) // Дефолтное значение - первое поле
+      .default(DEFAULT_SORT_BY) // Дефолтное значение - первое поле
       .isIn(Object.values(sortFieldsEnum))
       .withMessage(`Allowed sort fields: ${Object.values(sortFieldsEnum).join(', ')}`),
  
@@ -31,24 +32,27 @@ export function paginationAndSortingValidation<T extends string>(sortFieldsEnum:
       .default(DEFAULT_SORT_DIRECTION)
       .isIn(Object.values(SortDirection))
       .withMessage(`Sort direction must be one of: ${Object.values(SortDirection).join(', ')}`),
+    query('searchNameTerm')
+      .optional()
+      .isString()
+      .trim()
+      .withMessage('Search name term must be a string')
   ];
  }
  
  
 export const blogIdValidation = [
-    body('blogId').custom((blogId) => {
-        const blog = blogRepository.find(blogId)
+    body('blogId').custom(async (blogId) => {
+        const blog = await blogRepository.find(blogId)
         if (!blog) { 
-          new Error('no blog!') 
-          return false
+          throw new Error('no blog!') 
         }
-        return true
+        return true 
     }),
 ]
  
 export const inputCheckErrorsMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
-    console.log('inputCheckErrorsMiddleware errors: ', errors)
     if (errors.isEmpty()) {
       next();
       return;

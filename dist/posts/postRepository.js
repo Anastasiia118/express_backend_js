@@ -21,19 +21,9 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRepository = void 0;
+const post_types_1 = require("../types/post_types");
 const mongoDb_1 = require("../db/mongoDb");
 const mongodb_1 = require("mongodb");
-const getPostViewModel = (post) => {
-    return {
-        id: post._id.toString(),
-        title: post.title,
-        shortDescription: post.shortDescription,
-        content: post.content,
-        blogId: post.blogId,
-        blogName: post.blogName,
-        createdAt: post.createdAt,
-    };
-};
 exports.postRepository = {
     create(input, blogName) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -62,29 +52,24 @@ exports.postRepository = {
             if (!post || !mongodb_1.ObjectId.isValid(id)) {
                 return { error: 'Post not found' };
             }
-            return getPostViewModel(post);
+            return (0, post_types_1.getPostViewModel)(post);
         });
     },
     getPosts(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { pageNumber, pageSize, sortBy, sortDirection, searchTitleTerm, searchBlogNameTerm, } = query;
+            const { pageNumber, pageSize, sortBy, sortDirection, } = query;
             const skip = (pageNumber - 1) * pageSize;
             const filter = {};
-            if (searchTitleTerm) {
-                filter.title = { $regex: searchTitleTerm, $options: 'i' };
-            }
-            if (searchBlogNameTerm) {
-                filter.blogName = { $regex: searchBlogNameTerm, $options: 'i' };
-            }
+            const sortOrder = sortDirection === 'asc' ? 1 : -1;
             const posts = yield mongoDb_1.postsCollection
                 .find(filter)
                 .skip(skip)
                 .limit(pageSize)
-                .sort({ [sortBy]: sortDirection })
+                .sort({ [sortBy]: sortOrder })
                 .toArray();
             const totalCount = yield mongoDb_1.postsCollection.countDocuments(filter);
             return {
-                posts: posts.map(post => getPostViewModel(post)),
+                posts: posts.map(post => (0, post_types_1.getPostViewModel)(post)),
                 totalCount
             };
         });

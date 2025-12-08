@@ -47,14 +47,14 @@ describe(SETTINGS.PATH.BLOGS + '/', () => {
       const res = await req
           .get(SETTINGS.PATH.BLOGS + '/')
           .expect(200)
-      expect(res.body.data.length).toBe(0) 
+      expect(res.body.items.length).toBe(0) 
     })
     it('should get not empty array', async () => {
       const res = await req
           .get(SETTINGS.PATH.BLOGS + '/')
           .expect(200)
 
-      expect(res.body.data.length).toBe(3)
+      expect(res.body.items.length).toBe(3)
     })
 
     it('should return blog by id', async () => {

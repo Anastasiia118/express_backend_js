@@ -23,6 +23,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogRepository = void 0;
 const mongoDb_1 = require("../db/mongoDb");
 const mongodb_1 = require("mongodb");
+const post_types_1 = require("../types/post_types");
 const getBlogViewModel = (blog) => {
     return {
         id: blog._id.toString(),
@@ -61,29 +62,66 @@ exports.blogRepository = {
     },
     getBlogs(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { pageNumber, pageSize, sortBy, sortDirection, searchBlogNameTerm, searchBlogEmailTerm, searchBlogWebsiteUrlTerm, } = query;
+            const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm, } = query;
             const skip = (pageNumber - 1) * pageSize;
             const filter = {};
-            if (searchBlogNameTerm) {
-                filter.name = { $regex: searchBlogNameTerm, $options: 'i' };
+            if (searchNameTerm) {
+                filter.name = { $regex: searchNameTerm, $options: 'i' };
             }
-            if (searchBlogEmailTerm) {
-                filter.email = { $regex: searchBlogEmailTerm, $options: 'i' };
-            }
-            if (searchBlogWebsiteUrlTerm) {
-                filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
-            }
+            // if (searchBlogEmailTerm) {
+            //   filter.email = { $regex: searchBlogEmailTerm, $options: 'i' };
+            // }
+            // if (searchBlogWebsiteUrlTerm) {
+            //   filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
+            // }
+            const sortOrder = sortDirection === 'asc' ? 1 : -1;
             const blogs = yield mongoDb_1.blogsCollection
                 .find(filter)
                 .skip(skip)
                 .limit(pageSize)
-                .sort({ [sortBy]: sortDirection })
+                .sort({ [sortBy]: sortOrder })
                 .toArray();
             const totalCount = yield mongoDb_1.blogsCollection.countDocuments(filter);
             return {
                 blogs: blogs.map(blog => getBlogViewModel(blog)),
                 totalCount
             };
+        });
+    },
+    getPostsByBlogId(query, blogId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { pageNumber, pageSize, sortBy, sortDirection, } = query;
+            const skip = (pageNumber - 1) * pageSize;
+            const filter = { blogId: blogId };
+            const sortOrder = sortDirection === 'asc' ? 1 : -1;
+            const posts = yield mongoDb_1.postsCollection
+                .find(filter)
+                .skip(skip)
+                .limit(pageSize)
+                .sort({ [sortBy]: sortOrder })
+                .toArray();
+            const totalCount = yield mongoDb_1.postsCollection.countDocuments(filter);
+            return {
+                posts: posts.map(post => (0, post_types_1.getPostViewModel)(post)),
+                totalCount
+            };
+        });
+    },
+    createPostForBlog(input, blogName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const createdAt = new Date().toISOString();
+                const newPost = Object.assign(Object.assign({}, input), { createdAt,
+                    blogName });
+                const result = yield mongoDb_1.postsCollection.insertOne(Object.assign({}, newPost));
+                const insertedId = result.insertedId.toString();
+                const { _id } = newPost, postWithoutId = __rest(newPost, ["_id"]);
+                const post = Object.assign(Object.assign({}, postWithoutId), { id: insertedId });
+                return post;
+            }
+            catch (e) {
+                return { error: e.message };
+            }
         });
     },
     update(input, id) {

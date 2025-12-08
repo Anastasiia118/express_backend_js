@@ -51,7 +51,7 @@ describe(SETTINGS.PATH.POSTS + "/", () => {
   it("should get not empty array", async () => {
     const res = await req.get(SETTINGS.PATH.POSTS + "/").expect(200);
 
-    expect(res.body.data.length).toBe(3);
+    expect(res.body.items.length).toBe(3);
   });
 
   it("should return 404 if post not found", async () => {

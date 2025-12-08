@@ -32,7 +32,7 @@ export enum BlogSortField {
 
 export type BlogQueryInput = PaginationAndSorting<BlogSortField> & 
  Partial<{
-    searchBlogNameTerm: string;
-    searchBlogEmailTerm: string;
-    searchBlogWebsiteUrlTerm: string;
+    searchNameTerm: string;
+    // searchBlogEmailTerm: string;
+    // searchBlogWebsiteUrlTerm: string;
   }>;

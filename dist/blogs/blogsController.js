@@ -12,11 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogController = exports.blogsRouter = void 0;
 exports.mapToBlogsListPaginatedOutput = mapToBlogsListPaginatedOutput;
 const express_1 = require("express");
-const blogRepository_1 = require("./blogRepository");
 const blogsService_1 = require("./application/blogsService");
 const express_validator_1 = require("express-validator");
 const middlewares_1 = require("../middlewares");
 const express_validator_2 = require("express-validator");
+const post_types_1 = require("../types/post_types");
 exports.blogsRouter = (0, express_1.Router)();
 const BlogSortFields = {
     name: 'name',
@@ -25,13 +25,11 @@ const BlogSortFields = {
 };
 function mapToBlogsListPaginatedOutput(blogs, meta) {
     return {
-        meta: {
-            page: meta.pageNumber,
-            pageSize: meta.pageSize,
-            pageCount: Math.ceil(meta.totalCount / meta.pageSize),
-            totalCount: meta.totalCount,
-        },
-        data: blogs
+        page: meta.pageNumber,
+        pageSize: meta.pageSize,
+        pagesCount: Math.ceil(meta.totalCount / meta.pageSize),
+        totalCount: meta.totalCount,
+        items: blogs
     };
 }
 exports.blogController = {
@@ -42,14 +40,14 @@ exports.blogController = {
                     locations: ['query'],
                     includeOptionals: true
                 });
+                console.log('Sanitized query:', sanitizedQuery);
                 const { blogs, totalCount } = yield blogsService_1.blogsService.getAllBlogs(sanitizedQuery);
                 const blogsListOutput = mapToBlogsListPaginatedOutput(blogs, {
                     totalCount,
                     pageSize: sanitizedQuery.pageSize,
                     pageNumber: sanitizedQuery.pageNumber,
                 });
-                // res.status(200).json(blogsListOutput);
-                res.send(blogsListOutput);
+                res.status(200).json(blogsListOutput);
             }
             catch (error) {
                 res.status(500).json({ error: 'Failed to retrieve blogs' });
@@ -68,26 +66,63 @@ exports.blogController = {
             }
         });
     },
+    getBlogsPosts(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blogId = req.params.blogId;
+            try {
+                const sanitizedQuery = (0, express_validator_2.matchedData)(req, {
+                    locations: ['query'],
+                    includeOptionals: true,
+                });
+                const result = yield blogsService_1.blogsService.getPostsByBlogId(sanitizedQuery, blogId);
+                if ('error' in result) {
+                    res.status(404).json({ error: result.error });
+                    return;
+                }
+                const { posts, totalCount } = result;
+                const postsListOutput = (0, post_types_1.mapToPostsListPaginatedOutput)(posts, {
+                    totalCount,
+                    pageSize: sanitizedQuery.pageSize,
+                    pageNumber: sanitizedQuery.pageNumber,
+                });
+                res.status(200).json(postsListOutput);
+            }
+            catch (error) {
+                res.status(500).json({ error: 'Failed to retrieve posts' });
+            }
+        });
+    },
+    createPostForBlog(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blogId = req.params.blogId;
+            const postData = req.body;
+            try {
+                const result = yield blogsService_1.blogsService.createPostForBlog(Object.assign(Object.assign({}, postData), { blogId }));
+                if ('error' in result) {
+                    res.status(404).json({ error: result.error });
+                    return;
+                }
+                res.status(201).json(result);
+            }
+            catch (error) {
+                res.status(500).json({ error: 'Failed to create post for blog' });
+            }
+        });
+    },
     getBlogById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.params.id;
             try {
                 const result = yield blogsService_1.blogsService.getBlogById(id);
                 if (result.error) {
-                    res.status(404).json(result);
+                    res.status(404).json(result.error);
                     return;
                 }
-                res.status(200).json(result);
+                res.status(200).json(result.blog);
             }
             catch (error) {
                 res.status(500).json({ error: 'Failed to retrieve blog' });
             }
-        });
-    },
-    findBlog(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const blog = yield blogRepository_1.blogRepository.find(id);
-            return blog;
         });
     },
     updateBlog(req, res) {
@@ -95,12 +130,12 @@ exports.blogController = {
             const id = req.params.id;
             const updateData = req.body;
             try {
-                const result = yield blogRepository_1.blogRepository.update(updateData, id);
+                const result = yield blogsService_1.blogsService.updateBlog(updateData, id);
                 if (result.error) {
                     res.status(404).json(result);
                     return;
                 }
-                res.status(204).json(result);
+                res.status(204).json();
             }
             catch (error) {
                 res.status(500).json({ error: 'Failed to update blog' });
@@ -111,12 +146,12 @@ exports.blogController = {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.params.id;
             try {
-                const result = yield blogRepository_1.blogRepository.delete(id);
+                const result = yield blogsService_1.blogsService.deleteBlog(id);
                 if (result.error) {
                     res.status(404).json(result);
                     return;
                 }
-                res.status(204).json(result);
+                res.status(204).json();
             }
             catch (error) {
                 res.status(500).json({ error: 'Failed to delete blog' });
@@ -143,6 +178,7 @@ exports.blogsRouter.put("/:id", middlewares_1.authorizationMiddleware, (0, expre
     .isString()
     .trim()
     .notEmpty()
+    .isMongoId()
     .withMessage("the id is required"), (0, express_validator_1.body)("name")
     .notEmpty()
     .isString()
@@ -160,9 +196,40 @@ exports.blogsRouter.put("/:id", middlewares_1.authorizationMiddleware, (0, expre
     .isLength({ min: 1, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.updateBlog);
-exports.blogsRouter.get("/:id", exports.blogController.getBlogById);
+exports.blogsRouter.get("/:id", (0, express_validator_1.param)("id")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isMongoId()
+    .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.getBlogById);
+exports.blogsRouter.get("/:blogId/posts", (0, express_validator_1.param)("blogId")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isMongoId()
+    .withMessage("the id is required"), (0, middlewares_1.paginationAndSortingValidation)(post_types_1.PostSortFields), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.getBlogsPosts);
+exports.blogsRouter.post("/:blogId/posts", middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("blogId")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isMongoId()
+    .withMessage("the id is required"), (0, express_validator_1.body)("title")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1, max: 30 })
+    .withMessage("Title must be between 1 and 30 characters"), (0, express_validator_1.body)("shortDescription")
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Description must be between 1 and 100 characters"), (0, express_validator_1.body)("content")
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 1000 })
+    .withMessage("Content must be between 1 and 1000 characters"), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.createPostForBlog);
 exports.blogsRouter.delete("/:id", middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("id")
     .isString()
     .trim()
     .notEmpty()
+    .isMongoId()
     .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.deleteBlog);

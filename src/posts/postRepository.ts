@@ -1,24 +1,12 @@
 import { query } from 'express-validator';
-import { PostDBType, CreatePostType, PostOutputType, PostQueryInput } from '../types/post_types'
+import { PostDBType, CreatePostType, PostOutputType, PostQueryInput, getPostViewModel } from '../types/post_types'
 import { db } from '../db/db'
 import { postsCollection } from '../db/mongoDb';
 import { ObjectId, WithId } from 'mongodb';
 import { blogController } from '../blogs/blogsController';
 
-const getPostViewModel = (post: WithId<PostDBType>): PostOutputType => {
-  return {
-    id: post._id.toString(),
-    title: post.title,
-    shortDescription: post.shortDescription,
-    content: post.content,
-    blogId: post.blogId,
-    blogName: post.blogName,
-    createdAt: post.createdAt,
-  }
-}
-
 export const postRepository = {
-  async create(input: CreatePostType, blogName: string): Promise<{ error?: string; id?: string; }> {
+  async create(input: CreatePostType, blogName: string): Promise<PostOutputType | { error: string }> {
     try {
       const newPost: PostDBType = {
         ...input,
@@ -51,24 +39,17 @@ export const postRepository = {
       pageSize,
       sortBy,
       sortDirection,
-      searchTitleTerm,
-      searchBlogNameTerm,
     } = query;
 
     const skip = (pageNumber - 1) * pageSize;
     const filter: any = {};
-    
-    if (searchTitleTerm) {
-      filter.title = { $regex: searchTitleTerm, $options: 'i' };
-    }
-    if (searchBlogNameTerm) {
-      filter.blogName = { $regex: searchBlogNameTerm, $options: 'i' };
-    }
+
+    const sortOrder = sortDirection === 'asc' ? 1 : -1;
     const posts = await postsCollection
       .find(filter)
       .skip(skip)
       .limit(pageSize)
-      .sort({ [sortBy]: sortDirection })
+      .sort({ [sortBy]: sortOrder })
       .toArray();
     const totalCount = await postsCollection.countDocuments(filter);
     return { 

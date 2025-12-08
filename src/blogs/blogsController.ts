@@ -6,6 +6,7 @@ import { inputCheckErrorsMiddleware, authorizationMiddleware, paginationAndSorti
 import { BlogDBType } from "../types/blog_types";
 import { matchedData } from 'express-validator';
 import { BlogQueryInput, BlogOutputType } from "../types/blog_types";
+import { PostQueryInput, mapToPostsListPaginatedOutput, PostSortFields } from "../types/post_types";
 
 export const blogsRouter = Router();
 
@@ -19,14 +20,12 @@ export function mapToBlogsListPaginatedOutput(
   blogs: BlogOutputType[],
   meta: { totalCount: number; pageSize: number; pageNumber: number }
 ) {
-  return {
-    meta: {
-      page: meta.pageNumber,
-      pageSize: meta.pageSize,
-      pageCount: Math.ceil(meta.totalCount / meta.pageSize),
-      totalCount: meta.totalCount,
-    },
-    data: blogs
+return {
+    page: meta.pageNumber,
+    pageSize: meta.pageSize,
+    pagesCount: Math.ceil(meta.totalCount / meta.pageSize),
+    totalCount: meta.totalCount,
+    items: blogs
   };
 }
 
@@ -40,14 +39,14 @@ export const blogController = {
          locations: ['query'] ,
          includeOptionals: true
       })
+      console.log('Sanitized query:', sanitizedQuery); 
       const { blogs, totalCount } = await blogsService.getAllBlogs(sanitizedQuery);
       const blogsListOutput = mapToBlogsListPaginatedOutput(blogs, {
         totalCount,
         pageSize: sanitizedQuery.pageSize,
         pageNumber: sanitizedQuery.pageNumber,
       });
-     // res.status(200).json(blogsListOutput);
-      res.send(blogsListOutput);
+      res.status(200).json(blogsListOutput);
     } catch (error) {
       res.status(500).json({ error: 'Failed to retrieve blogs' });
     }
@@ -61,33 +60,66 @@ export const blogController = {
         res.status(500).json({ error: 'Failed to create blog' });
     }
   },
+  async getBlogsPosts(req: Request, res: Response) {
+    const blogId = req.params.blogId;
+    try {
+        const sanitizedQuery = matchedData<PostQueryInput>(req, {
+            locations: ['query'] ,
+            includeOptionals: true,
+        })
+        const result = await blogsService.getPostsByBlogId(sanitizedQuery, blogId);
+        if ('error' in result) {
+            res.status(404).json({ error: result.error });
+            return;
+        }
+        const { posts, totalCount } = result;
+        const postsListOutput = mapToPostsListPaginatedOutput(posts, {
+          totalCount,
+          pageSize: sanitizedQuery.pageSize,
+          pageNumber: sanitizedQuery.pageNumber,
+        });
+        res.status(200).json(postsListOutput);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve posts' });
+    }
+  },
+  async createPostForBlog(req: Request, res: Response): Promise<void> {
+    const blogId = req.params.blogId;
+    const postData = req.body;
+    try {
+        const result = await blogsService.createPostForBlog({...postData, blogId});
+        if ('error' in result) {
+            res.status(404).json({ error: result.error });
+            return;
+        }
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to create post for blog' });
+    }
+  },
   async getBlogById(req: Request, res: Response): Promise<void> {
     const id = req.params.id;
     try {
         const result = await blogsService.getBlogById(id as string);
         if (result.error) {
-          res.status(404).json(result);
+          res.status(404).json(result.error);
           return;
         }
-        res.status(200).json(result);
+        res.status(200).json(result.blog);
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve blog' });
     }
-  },
-  async findBlog(id: string): Promise<BlogDBType | undefined> {
-    const blog = await blogRepository.find(id);
-    return blog;
   },
   async updateBlog(req: Request, res: Response): Promise<void> {
     const id = req.params.id;
     const updateData: Partial<BlogDBType> = req.body;
     try {
-      const result = await blogRepository.update(updateData, id as string);
+      const result = await blogsService.updateBlog(updateData, id as string);
       if (result.error) {
           res.status(404).json(result);
           return;
       }
-      res.status(204).json(result);
+      res.status(204).json();
     } catch (error) {
         res.status(500).json({ error: 'Failed to update blog' });
     }
@@ -95,12 +127,12 @@ export const blogController = {
   async deleteBlog(req: Request, res: Response): Promise<void> {
     const id = req.params.id;
     try {
-      const result = await blogRepository.delete(id);
+      const result = await blogsService.deleteBlog(id);
       if (result.error) {
           res.status(404).json(result);
           return;
       }
-      res.status(204).json(result);
+      res.status(204).json();
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete blog' });
     }
@@ -141,6 +173,7 @@ blogsRouter.put(
     .isString()
     .trim()
     .notEmpty()
+    .isMongoId()
     .withMessage("the id is required"),
   body("name")
     .notEmpty()
@@ -164,13 +197,58 @@ blogsRouter.put(
   inputCheckErrorsMiddleware, 
   blogController.updateBlog
 );
-blogsRouter.get("/:id", blogController.getBlogById);
-blogsRouter.delete("/:id", 
+blogsRouter.get("/:id",
+  param("id")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isMongoId()
+    .withMessage("the id is required"),
+  inputCheckErrorsMiddleware,
+  blogController.getBlogById);
+blogsRouter.get("/:blogId/posts",
+  param("blogId")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isMongoId()
+    .withMessage("the id is required"),
+  paginationAndSortingValidation(PostSortFields),
+  inputCheckErrorsMiddleware,
+  blogController.getBlogsPosts);
+blogsRouter.post("/:blogId/posts",
+  authorizationMiddleware,
+  param("blogId")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isMongoId()
+    .withMessage("the id is required"),
+  body("title")
+    .isString()
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1, max: 30 })
+    .withMessage("Title must be between 1 and 30 characters"),
+  body("shortDescription")
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Description must be between 1 and 100 characters"),
+  body("content")
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 1000 })
+    .withMessage("Content must be between 1 and 1000 characters"),
+  inputCheckErrorsMiddleware, 
+  blogController.createPostForBlog);
+blogsRouter.delete("/:id",
   authorizationMiddleware,
   param("id")
     .isString()
     .trim()
     .notEmpty()
+    .isMongoId()
     .withMessage("the id is required"),
-  inputCheckErrorsMiddleware, 
+  inputCheckErrorsMiddleware,   
 blogController.deleteBlog);

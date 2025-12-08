@@ -19,7 +19,11 @@ exports.blogsService = {
     },
     getBlogById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield blogRepository_1.blogRepository.findForOutput(id);
+            const result = yield blogRepository_1.blogRepository.findForOutput(id);
+            if ('error' in result) {
+                return { error: result.error };
+            }
+            return { blog: result };
         });
     },
     getAllBlogs(query) {
@@ -27,9 +31,27 @@ exports.blogsService = {
             return yield blogRepository_1.blogRepository.getBlogs(query);
         });
     },
-    updateBlog(id, input) {
+    getPostsByBlogId(query, blogId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield blogRepository_1.blogRepository.update(input, id);
+            const blog = yield blogRepository_1.blogRepository.find(blogId);
+            if (!blog) {
+                return { error: 'Blog not found' };
+            }
+            return yield blogRepository_1.blogRepository.getPostsByBlogId(query, blogId);
+        });
+    },
+    createPostForBlog(postData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blog = yield blogRepository_1.blogRepository.find(postData.blogId);
+            if (!blog) {
+                return { error: 'Blog not found' };
+            }
+            return yield blogRepository_1.blogRepository.createPostForBlog(Object.assign({}, postData), blog.name);
+        });
+    },
+    updateBlog(updateData, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield blogRepository_1.blogRepository.update(updateData, id);
         });
     },
     deleteBlog(id) {

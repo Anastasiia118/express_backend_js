@@ -4,6 +4,7 @@ import { blogsCollection, postsCollection } from '../db/mongoDb'
 import { db } from '../db/db'
 import { ObjectId, WithId } from 'mongodb';
 import { BlogQueryInput } from '../types/blog_types';
+import { PostDBType, PostQueryInput, getPostViewModel, PostOutputType, CreatePostType } from '../types/post_types';
 
 const getBlogViewModel = (blog: WithId<BlogDBType>): BlogOutputType => {
   return {
@@ -47,34 +48,72 @@ export const blogRepository = {
       pageSize,
       sortBy,
       sortDirection,
-      searchBlogNameTerm,
-      searchBlogEmailTerm,
-      searchBlogWebsiteUrlTerm,
+      searchNameTerm,
     } = query;
 
     const skip = (pageNumber - 1) * pageSize;
     const filter: any = {};
 
-    if (searchBlogNameTerm) {
-      filter.name = { $regex: searchBlogNameTerm, $options: 'i' };
+    if (searchNameTerm) {
+      filter.name = { $regex: searchNameTerm, $options: 'i' };
     }
-    if (searchBlogEmailTerm) {
-      filter.email = { $regex: searchBlogEmailTerm, $options: 'i' };
-    }
-    if (searchBlogWebsiteUrlTerm) {
-      filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
-    }
+    // if (searchBlogEmailTerm) {
+    //   filter.email = { $regex: searchBlogEmailTerm, $options: 'i' };
+    // }
+    // if (searchBlogWebsiteUrlTerm) {
+    //   filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
+    // }
+    const sortOrder = sortDirection === 'asc' ? 1 : -1;
     const blogs = await blogsCollection
       .find(filter)
       .skip(skip)
       .limit(pageSize)
-      .sort({ [sortBy]: sortDirection })
+      .sort({ [sortBy]: sortOrder })
       .toArray();
     const totalCount = await blogsCollection.countDocuments(filter);
     return {
       blogs: blogs.map(blog => getBlogViewModel(blog)),
       totalCount
     };
+  },
+  async getPostsByBlogId(query: PostQueryInput, blogId: string): Promise<{ posts: PostOutputType[]; totalCount: number }> {
+    const {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDirection,
+    } = query;
+    const skip = (pageNumber - 1) * pageSize;
+    const filter: any = { blogId: blogId };
+    const sortOrder = sortDirection === 'asc' ? 1 : -1;
+    const posts = await postsCollection
+      .find(filter)
+      .skip(skip)
+      .limit(pageSize)
+      .sort({ [sortBy]: sortOrder })
+      .toArray();
+    const totalCount = await postsCollection.countDocuments(filter);
+    return { 
+      posts: posts.map(post => getPostViewModel(post)),
+      totalCount
+    };
+  },
+  async createPostForBlog(input: Omit<CreatePostType, 'blogId'> & { blogId: string }, blogName: string): Promise<PostOutputType | { error: string }> {
+    try{
+      const createdAt = new Date().toISOString();
+      const newPost: PostDBType = {
+        ...input,
+        createdAt,
+        blogName
+      };
+      const result = await postsCollection.insertOne({ ...newPost });
+      const insertedId = result.insertedId.toString();
+      const { _id, ...postWithoutId } = newPost;
+      const post = { ...postWithoutId, id: insertedId }
+      return post;
+    } catch (e: any) {
+      return { error: e.message };
+    }
   },
   async update(input: Partial<BlogDBType>, id: string): Promise<{ error?: string; id?: string; }> {
     const result = await blogsCollection.updateOne(

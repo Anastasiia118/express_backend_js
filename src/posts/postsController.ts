@@ -3,31 +3,10 @@ import { postsService } from './application/postsService';
 import { body, matchedData, param } from 'express-validator';
 import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware, paginationAndSortingValidation } from '../middlewares';
 import { blogsCollection, postsCollection } from '../db/mongoDb';
-import { PostOutputType, PostQueryInput } from '../types/post_types';
+import { PostQueryInput,  mapToPostsListPaginatedOutput, PostSortFields} from '../types/post_types';
 
 
 export const postsRouter = Router();
-
-const PostSortFields = {
-  title: 'title',
-  createdAt: 'createdAt',
-  blogName: 'blogName'
-}
-
-export function mapToPostsListPaginatedOutput(
-  posts: PostOutputType[],
-  meta: { totalCount: number; pageSize: number; pageNumber: number }
-) {
-  return {
-    meta: {
-      page: meta.pageNumber,
-      pageSize: meta.pageSize,
-      pageCount: Math.ceil(meta.totalCount / meta.pageSize),
-      totalCount: meta.totalCount,
-    },
-    data: posts
-  };
-}
 
 export const postController = {
   async getPosts(req: Request, res: Response) {
@@ -42,17 +21,11 @@ export const postController = {
         pageSize: sanitizedQuery.pageSize,
         pageNumber: sanitizedQuery.pageNumber,
       });
-      res.send(postsListOutput);
+      res.status(200).json(postsListOutput);
     } catch (error) {
       res.status(500).json({ error: 'Failed to retrieve posts' }
       )
     }
-    // const posts = await postsService.getAllPosts();
-    // if (!posts.length) {
-    //   res.status(404).send('No videos found');
-    //   return;
-    // }
-    // res.status(200).json(posts);
   },
   async createPost(req: Request, res: Response) {
     const body = req.body;
@@ -126,6 +99,7 @@ postsRouter.put(
     .isString()
     .trim()
     .notEmpty()
+    .isMongoId()
     .withMessage("the id is required"),
   body('title')
     .isString()
@@ -160,6 +134,7 @@ postsRouter.delete('/:id',
     .isString()
     .trim()
     .notEmpty()
+    .isMongoId()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware,
   postController.deletePost
