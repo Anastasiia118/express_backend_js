@@ -23,6 +23,9 @@ export const postRepository = {
     }
   },
   async find(id: string): Promise<WithId<PostDBType> | undefined> {
+    if (!ObjectId.isValid(id)) {
+      return undefined;
+    }
     const post = await postsCollection.findOne({ _id: new ObjectId(id) })
     return post ? post : undefined
   },

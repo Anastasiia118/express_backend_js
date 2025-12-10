@@ -47,6 +47,9 @@ exports.blogRepository = {
     },
     find(id) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!mongodb_1.ObjectId.isValid(id)) {
+                return undefined;
+            }
             const blog = yield mongoDb_1.blogsCollection.findOne({ _id: new mongodb_1.ObjectId(id) });
             return blog ? blog : undefined;
         });
@@ -126,17 +129,28 @@ exports.blogRepository = {
     },
     update(input, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield mongoDb_1.blogsCollection.updateOne({ _id: new mongodb_1.ObjectId(id) }, { $set: input });
-            if (result.matchedCount === 0) {
+            try {
+                if (!mongodb_1.ObjectId.isValid(id)) {
+                    return { error: 'Blog not found' };
+                }
+                const result = yield mongoDb_1.blogsCollection.updateOne({ _id: new mongodb_1.ObjectId(id) }, { $set: input });
+                if (result.matchedCount === 0) {
+                    return { error: 'Blog not found' };
+                }
+                const updatedBlog = yield this.find(id);
+                return updatedBlog ? { id: updatedBlog._id.toString() } : { error: 'Blog not found' };
+            }
+            catch (e) {
                 return { error: 'Blog not found' };
             }
-            const updatedBlog = yield this.find(id);
-            return updatedBlog ? { id: updatedBlog._id.toString() } : { error: 'Blog not found' };
         });
     },
     delete(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                if (!mongodb_1.ObjectId.isValid(id)) {
+                    return { error: 'Blog not found' };
+                }
                 const result = yield mongoDb_1.blogsCollection.deleteOne({ _id: new mongodb_1.ObjectId(id) });
                 if (result.deletedCount === 0) {
                     return { error: 'Blog not found' };

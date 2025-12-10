@@ -39,11 +39,6 @@ function paginationAndSortingValidation(sortFieldsEnum) {
             .default(DEFAULT_SORT_DIRECTION)
             .isIn(Object.values(common_types_1.SortDirection))
             .withMessage(`Sort direction must be one of: ${Object.values(common_types_1.SortDirection).join(', ')}`),
-        (0, express_validator_1.query)('searchNameTerm')
-            .optional()
-            .isString()
-            .trim()
-            .withMessage('Search name term must be a string')
     ];
 }
 exports.blogIdValidation = [

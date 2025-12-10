@@ -103,7 +103,6 @@ exports.postsRouter.put('/:id', middlewares_1.authorizationMiddleware, (0, expre
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"), (0, express_validator_1.body)('title')
     .isString()
     .trim()
@@ -129,5 +128,4 @@ exports.postsRouter.delete('/:id', middlewares_1.authorizationMiddleware, (0, ex
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, exports.postController.deletePost);

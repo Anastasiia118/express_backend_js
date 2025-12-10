@@ -99,7 +99,6 @@ postsRouter.put(
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"),
   body('title')
     .isString()
@@ -134,7 +133,6 @@ postsRouter.delete('/:id',
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware,
   postController.deletePost

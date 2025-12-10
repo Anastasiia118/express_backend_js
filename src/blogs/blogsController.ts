@@ -1,7 +1,6 @@
-import { Request, RequestHandler, Response, Router } from "express";
-import { blogRepository } from "./blogRepository";
+import { Request, Response, Router } from "express";
 import { blogsService } from "./application/blogsService";
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 import { inputCheckErrorsMiddleware, authorizationMiddleware, paginationAndSortingValidation } from "../middlewares";
 import { BlogDBType } from "../types/blog_types";
 import { matchedData } from 'express-validator';
@@ -141,6 +140,11 @@ export const blogController = {
 
 blogsRouter.get("/", 
   paginationAndSortingValidation(BlogSortFields),
+  query('searchNameTerm')
+      .optional()
+      .isString()
+      .trim()
+      .withMessage('Search name term must be a string'),
   inputCheckErrorsMiddleware,
   blogController.getBlogs
 );
@@ -173,24 +177,23 @@ blogsRouter.put(
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"),
   body("name")
-    .notEmpty()
     .isString()
     .trim()
+    .notEmpty()
     .isLength({ min: 1, max: 15 })
     .withMessage("Name must be between 1 and 15 characters"),
   body("description")
-    .notEmpty()
     .isString()
     .trim()
+    .notEmpty()
     .isLength({ min: 1, max: 500 })
     .withMessage("Description must be between 1 and 500 characters"),
   body("websiteUrl")
-    .notEmpty()
     .isString()
     .trim()
+    .notEmpty()
     .isLength({ min: 1, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'),
@@ -202,7 +205,6 @@ blogsRouter.get("/:id",
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware,
   blogController.getBlogById);
@@ -211,7 +213,6 @@ blogsRouter.get("/:blogId/posts",
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"),
   paginationAndSortingValidation(PostSortFields),
   inputCheckErrorsMiddleware,
@@ -222,7 +223,6 @@ blogsRouter.post("/:blogId/posts",
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"),
   body("title")
     .isString()
@@ -248,7 +248,6 @@ blogsRouter.delete("/:id",
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"),
   inputCheckErrorsMiddleware,   
 blogController.deleteBlog);

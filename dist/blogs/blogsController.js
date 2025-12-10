@@ -159,7 +159,11 @@ exports.blogController = {
         });
     }
 };
-exports.blogsRouter.get("/", (0, middlewares_1.paginationAndSortingValidation)(BlogSortFields), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.getBlogs);
+exports.blogsRouter.get("/", (0, middlewares_1.paginationAndSortingValidation)(BlogSortFields), (0, express_validator_1.query)('searchNameTerm')
+    .optional()
+    .isString()
+    .trim()
+    .withMessage('Search name term must be a string'), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.getBlogs);
 exports.blogsRouter.post("/", middlewares_1.authorizationMiddleware, (0, express_validator_1.body)("name")
     .isString()
     .trim()
@@ -178,21 +182,20 @@ exports.blogsRouter.put("/:id", middlewares_1.authorizationMiddleware, (0, expre
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"), (0, express_validator_1.body)("name")
-    .notEmpty()
     .isString()
     .trim()
+    .notEmpty()
     .isLength({ min: 1, max: 15 })
     .withMessage("Name must be between 1 and 15 characters"), (0, express_validator_1.body)("description")
-    .notEmpty()
     .isString()
     .trim()
+    .notEmpty()
     .isLength({ min: 1, max: 500 })
     .withMessage("Description must be between 1 and 500 characters"), (0, express_validator_1.body)("websiteUrl")
-    .notEmpty()
     .isString()
     .trim()
+    .notEmpty()
     .isLength({ min: 1, max: 100 })
     .matches('https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$')
     .withMessage('Invalid URL'), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.updateBlog);
@@ -200,19 +203,16 @@ exports.blogsRouter.get("/:id", (0, express_validator_1.param)("id")
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.getBlogById);
 exports.blogsRouter.get("/:blogId/posts", (0, express_validator_1.param)("blogId")
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"), (0, middlewares_1.paginationAndSortingValidation)(post_types_1.PostSortFields), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.getBlogsPosts);
 exports.blogsRouter.post("/:blogId/posts", middlewares_1.authorizationMiddleware, (0, express_validator_1.param)("blogId")
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"), (0, express_validator_1.body)("title")
     .isString()
     .trim()
@@ -231,5 +231,4 @@ exports.blogsRouter.delete("/:id", middlewares_1.authorizationMiddleware, (0, ex
     .isString()
     .trim()
     .notEmpty()
-    .isMongoId()
     .withMessage("the id is required"), middlewares_1.inputCheckErrorsMiddleware, exports.blogController.deleteBlog);

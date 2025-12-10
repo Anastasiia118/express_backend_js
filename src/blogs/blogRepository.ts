@@ -1,7 +1,5 @@
-import { query } from 'express-validator';
 import { BlogDBType, CreateBlogType, BlogOutputType } from '../types/blog_types'
 import { blogsCollection, postsCollection } from '../db/mongoDb'
-import { db } from '../db/db'
 import { ObjectId, WithId } from 'mongodb';
 import { BlogQueryInput } from '../types/blog_types';
 import { PostDBType, PostQueryInput, getPostViewModel, PostOutputType, CreatePostType } from '../types/post_types';
@@ -32,6 +30,9 @@ export const blogRepository = {
     return { ...blogWithoutId, id: insertedId };
   },
   async find(id: string): Promise<WithId<BlogDBType> | undefined> {
+    if (!ObjectId.isValid(id)) {
+      return undefined;
+    }
     const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
     return blog ? blog : undefined;
   },
@@ -116,18 +117,28 @@ export const blogRepository = {
     }
   },
   async update(input: Partial<BlogDBType>, id: string): Promise<{ error?: string; id?: string; }> {
-    const result = await blogsCollection.updateOne(
+    try {
+      if (!ObjectId.isValid(id)) {
+        return { error: 'Blog not found' };
+      }
+      const result = await blogsCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: input }
-    );
-    if (result.matchedCount === 0) {
+      );
+      if (result.matchedCount === 0) {
         return { error: 'Blog not found' };
+      }
+      const updatedBlog = await this.find(id);
+      return updatedBlog ? { id: updatedBlog._id.toString() } : { error: 'Blog not found' };
+    } catch (e: any) {
+      return { error: 'Blog not found' };
     }
-    const updatedBlog = await this.find(id);
-    return updatedBlog ? { id: updatedBlog._id.toString() } : { error: 'Blog not found' };
   },
   async delete(id: string): Promise<{ error?: string; id?: string }> {
     try {
+      if (!ObjectId.isValid(id)) {
+        return { error: 'Blog not found' };
+      }
       const result = await blogsCollection.deleteOne({ _id: new ObjectId(id) });
       if (result.deletedCount === 0) {
           return { error: 'Blog not found' };

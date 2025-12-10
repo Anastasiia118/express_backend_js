@@ -32,11 +32,6 @@ export function paginationAndSortingValidation<T extends string>(sortFieldsEnum:
       .default(DEFAULT_SORT_DIRECTION)
       .isIn(Object.values(SortDirection))
       .withMessage(`Sort direction must be one of: ${Object.values(SortDirection).join(', ')}`),
-    query('searchNameTerm')
-      .optional()
-      .isString()
-      .trim()
-      .withMessage('Search name term must be a string')
   ];
  }
  

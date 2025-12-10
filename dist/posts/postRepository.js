@@ -42,6 +42,9 @@ exports.postRepository = {
     },
     find(id) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!mongodb_1.ObjectId.isValid(id)) {
+                return undefined;
+            }
             const post = yield mongoDb_1.postsCollection.findOne({ _id: new mongodb_1.ObjectId(id) });
             return post ? post : undefined;
         });
