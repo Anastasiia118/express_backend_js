@@ -1,8 +1,7 @@
-import { BlogDBType, CreateBlogType, BlogOutputType } from '../../types/blog_types'
+import { BlogDBType, CreateBlogType, BlogOutputType, BlogQueryInput } from '../blog_types'
 import { blogsCollection, postsCollection } from '../../db/mongoDb'
 import { ObjectId, WithId } from 'mongodb';
-import { BlogQueryInput } from '../../types/blog_types';
-import { PostDBType, PostQueryInput, getPostViewModel, PostOutputType, CreatePostType } from '../../types/post_types';
+import { PostDBType, PostQueryInput, getPostViewModel, PostOutputType, CreatePostType } from '../../posts/post_types';
 
 const getBlogViewModel = (blog: WithId<BlogDBType>): BlogOutputType => {
   return {

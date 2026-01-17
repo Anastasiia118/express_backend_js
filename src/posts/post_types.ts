@@ -1,5 +1,5 @@
 import { ObjectId, WithId } from "mongodb";
-import { PaginationAndSorting } from "./common_types";
+import { PaginationAndSorting } from "../types/common_types";
 
 
 export interface PostDBType {

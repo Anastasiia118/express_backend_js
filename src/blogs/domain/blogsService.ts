@@ -1,6 +1,6 @@
-import { BlogDBType, BlogQueryInput, CreateBlogType, BlogOutputType } from '../../types/blog_types';
+import { BlogDBType, BlogQueryInput, CreateBlogType, BlogOutputType } from '../blog_types';
 import { blogRepository } from "../infrastructure/blogRepository";
-import { PostQueryInput, PostOutputType, CreatePostType } from '../../types/post_types';
+import { PostQueryInput, PostOutputType, CreatePostType } from '../../posts/post_types';
 
 export const blogsService = {
     async createBlog(input: CreateBlogType): Promise<{ error?: string; id?: string; }> {

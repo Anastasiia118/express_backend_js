@@ -1,5 +1,5 @@
 import { setDB, db } from '../src/db/db'
-import { BlogDBType, CreateBlogType } from '../src/types/blog_types'
+import { BlogDBType, CreateBlogType } from '../src/blogs/blog_types'
 import { req } from './test-helpers'
 import {dataset1} from './datasets'
 import { SETTINGS } from '../src/settings'

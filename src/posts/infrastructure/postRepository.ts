@@ -1,5 +1,5 @@
 import { query } from 'express-validator';
-import { PostDBType, CreatePostType, PostOutputType, PostQueryInput, getPostViewModel } from '../../types/post_types'
+import { PostDBType, CreatePostType, PostOutputType, PostQueryInput, getPostViewModel } from '../post_types'
 import { db } from '../../db/db'
 import { postsCollection } from '../../db/mongoDb';
 import { ObjectId, WithId } from 'mongodb';

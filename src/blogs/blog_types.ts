@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { PaginationAndSorting } from "./common_types";
+import { PaginationAndSorting } from "../types/common_types";
 
 export interface BlogDBType {
   _id?: ObjectId;

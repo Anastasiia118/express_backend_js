@@ -3,7 +3,7 @@ import { postsService } from '../domain/postsService';
 import { body, matchedData, param } from 'express-validator';
 import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware, paginationAndSortingValidation } from '../../middlewares';
 import { blogsCollection, postsCollection } from '../../db/mongoDb';
-import { PostQueryInput,  mapToPostsListPaginatedOutput, PostSortFields} from '../../types/post_types';
+import { PostQueryInput,  mapToPostsListPaginatedOutput, PostSortFields} from '../post_types';
 
 
 export const postsRouter = Router();

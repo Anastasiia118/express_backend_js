@@ -1,5 +1,5 @@
 import { postRepository } from '../infrastructure/postRepository';
-import { PostDBType, CreatePostType, PostOutputType, PostQueryInput } from '../../types/post_types'
+import { PostDBType, CreatePostType, PostOutputType, PostQueryInput } from '../post_types'
 import { blogRepository } from '../../blogs/infrastructure/blogRepository';
 
 export const postsService = {

@@ -1,5 +1,5 @@
 import { setDB, db } from "../src/db/db";
-import { PostDBType, CreatePostType } from "../src/types/post_types";
+import { PostDBType, CreatePostType } from "../src/posts/post_types";
 import { req } from "./test-helpers";
 import { dataset1 } from "./datasets";
 import { SETTINGS } from "../src/settings";
