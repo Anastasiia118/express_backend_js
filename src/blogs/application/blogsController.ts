@@ -1,11 +1,11 @@
 import { Request, Response, Router } from "express";
-import { blogsService } from "./application/blogsService";
+import { blogsService } from "../domain/blogsService";
 import { body, param, query } from "express-validator";
-import { inputCheckErrorsMiddleware, authorizationMiddleware, paginationAndSortingValidation } from "../middlewares";
-import { BlogDBType } from "../types/blog_types";
+import { inputCheckErrorsMiddleware, authorizationMiddleware, paginationAndSortingValidation } from "../../middlewares";
+import { BlogDBType } from "../../types/blog_types";
 import { matchedData } from 'express-validator';
-import { BlogQueryInput, BlogOutputType } from "../types/blog_types";
-import { PostQueryInput, mapToPostsListPaginatedOutput, PostSortFields } from "../types/post_types";
+import { BlogQueryInput, BlogOutputType } from "../../types/blog_types";
+import { PostQueryInput, mapToPostsListPaginatedOutput, PostSortFields } from "../../types/post_types";
 
 export const blogsRouter = Router();
 

@@ -42,7 +42,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postsCollection = exports.blogsCollection = void 0;
+exports.usersCollection = exports.postsCollection = exports.blogsCollection = void 0;
 exports.runDb = runDb;
 const mongodb_1 = require("mongodb");
 const settings_1 = require("../settings");
@@ -55,6 +55,7 @@ function runDb(url) {
         let db = client.db(settings_1.SETTINGS.DB_NAME);
         exports.blogsCollection = db.collection(settings_1.SETTINGS.PATH.BLOGS);
         exports.postsCollection = db.collection(settings_1.SETTINGS.PATH.POSTS);
+        exports.usersCollection = db.collection(settings_1.SETTINGS.PATH.USERS);
         try {
             yield client.connect();
             yield db.command({ ping: 1 });

@@ -1,8 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import {SETTINGS} from './settings'
-import {postsRouter, postController} from './posts/postsController'
-import {blogsRouter} from './blogs/blogsController'
+import {postsRouter, postController} from './posts/application/postsController'
+import {blogsRouter} from './blogs/application/blogsController'
 
  
 export const app = express()

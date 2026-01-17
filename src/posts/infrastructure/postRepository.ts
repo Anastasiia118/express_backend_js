@@ -1,9 +1,8 @@
 import { query } from 'express-validator';
-import { PostDBType, CreatePostType, PostOutputType, PostQueryInput, getPostViewModel } from '../types/post_types'
-import { db } from '../db/db'
-import { postsCollection } from '../db/mongoDb';
+import { PostDBType, CreatePostType, PostOutputType, PostQueryInput, getPostViewModel } from '../../types/post_types'
+import { db } from '../../db/db'
+import { postsCollection } from '../../db/mongoDb';
 import { ObjectId, WithId } from 'mongodb';
-import { blogController } from '../blogs/blogsController';
 
 export const postRepository = {
   async create(input: CreatePostType, blogName: string): Promise<PostOutputType | { error: string }> {
@@ -47,12 +46,11 @@ export const postRepository = {
     const skip = (pageNumber - 1) * pageSize;
     const filter: any = {};
 
-    const sortOrder = sortDirection === 'asc' ? 1 : -1;
     const posts = await postsCollection
       .find(filter)
       .skip(skip)
       .limit(pageSize)
-      .sort({ [sortBy]: sortOrder })
+      .sort({ [sortBy]: sortDirection })
       .toArray();
     const totalCount = await postsCollection.countDocuments(filter);
     return { 

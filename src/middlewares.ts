@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction} from 'express'
 import {body, validationResult, query} from 'express-validator'
-import {blogRepository} from './blogs/blogRepository'
+import {blogRepository} from './blogs/infrastructure/blogRepository'
 import {SETTINGS} from './settings'
 import { SortDirection } from './types/common_types';
 

@@ -1,9 +1,9 @@
 import { Request, Response, Router } from 'express';
-import { postsService } from './application/postsService';
+import { postsService } from '../domain/postsService';
 import { body, matchedData, param } from 'express-validator';
-import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware, paginationAndSortingValidation } from '../middlewares';
-import { blogsCollection, postsCollection } from '../db/mongoDb';
-import { PostQueryInput,  mapToPostsListPaginatedOutput, PostSortFields} from '../types/post_types';
+import { inputCheckErrorsMiddleware, blogIdValidation, authorizationMiddleware, paginationAndSortingValidation } from '../../middlewares';
+import { blogsCollection, postsCollection } from '../../db/mongoDb';
+import { PostQueryInput,  mapToPostsListPaginatedOutput, PostSortFields} from '../../types/post_types';
 
 
 export const postsRouter = Router();
@@ -137,4 +137,3 @@ postsRouter.delete('/:id',
   inputCheckErrorsMiddleware,
   postController.deletePost
 );
-

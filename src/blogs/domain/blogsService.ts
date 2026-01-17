@@ -1,5 +1,5 @@
 import { BlogDBType, BlogQueryInput, CreateBlogType, BlogOutputType } from '../../types/blog_types';
-import { blogRepository } from "../blogRepository";
+import { blogRepository } from "../infrastructure/blogRepository";
 import { PostQueryInput, PostOutputType, CreatePostType } from '../../types/post_types';
 
 export const blogsService = {

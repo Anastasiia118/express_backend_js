@@ -1,8 +1,8 @@
-import { BlogDBType, CreateBlogType, BlogOutputType } from '../types/blog_types'
-import { blogsCollection, postsCollection } from '../db/mongoDb'
+import { BlogDBType, CreateBlogType, BlogOutputType } from '../../types/blog_types'
+import { blogsCollection, postsCollection } from '../../db/mongoDb'
 import { ObjectId, WithId } from 'mongodb';
-import { BlogQueryInput } from '../types/blog_types';
-import { PostDBType, PostQueryInput, getPostViewModel, PostOutputType, CreatePostType } from '../types/post_types';
+import { BlogQueryInput } from '../../types/blog_types';
+import { PostDBType, PostQueryInput, getPostViewModel, PostOutputType, CreatePostType } from '../../types/post_types';
 
 const getBlogViewModel = (blog: WithId<BlogDBType>): BlogOutputType => {
   return {
@@ -58,18 +58,12 @@ export const blogRepository = {
     if (searchNameTerm) {
       filter.name = { $regex: searchNameTerm, $options: 'i' };
     }
-    // if (searchBlogEmailTerm) {
-    //   filter.email = { $regex: searchBlogEmailTerm, $options: 'i' };
-    // }
-    // if (searchBlogWebsiteUrlTerm) {
-    //   filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
-    // }
-    const sortOrder = sortDirection === 'asc' ? 1 : -1;
+
     const blogs = await blogsCollection
       .find(filter)
       .skip(skip)
       .limit(pageSize)
-      .sort({ [sortBy]: sortOrder })
+      .sort({ [sortBy]: sortDirection })
       .toArray();
     const totalCount = await blogsCollection.countDocuments(filter);
     return {
@@ -86,12 +80,11 @@ export const blogRepository = {
     } = query;
     const skip = (pageNumber - 1) * pageSize;
     const filter: any = { blogId: blogId };
-    const sortOrder = sortDirection === 'asc' ? 1 : -1;
     const posts = await postsCollection
       .find(filter)
       .skip(skip)
       .limit(pageSize)
-      .sort({ [sortBy]: sortOrder })
+      .sort({ [sortBy]: sortDirection })
       .toArray();
     const totalCount = await postsCollection.countDocuments(filter);
     return { 

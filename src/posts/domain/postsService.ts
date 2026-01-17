@@ -1,6 +1,6 @@
-import { postRepository } from '../postRepository';
+import { postRepository } from '../infrastructure/postRepository';
 import { PostDBType, CreatePostType, PostOutputType, PostQueryInput } from '../../types/post_types'
-import { blogRepository } from '../../blogs/blogRepository';
+import { blogRepository } from '../../blogs/infrastructure/blogRepository';
 
 export const postsService = {
     async createPost(input: CreatePostType): Promise<{ error?: string; id?: string;}> {

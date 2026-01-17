@@ -1,13 +1,15 @@
 
-import { MongoClient, Db, Collection } from 'mongodb';
+import { MongoClient, Collection } from 'mongodb';
 import {BlogDBType} from '../types/blog_types'
 import {PostDBType} from '../types/post_types'
+import {UserDBType} from '../users/user_types'
 import {SETTINGS} from '../settings'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
 export let blogsCollection: Collection<BlogDBType>
 export let postsCollection: Collection<PostDBType>
+export let usersCollection: Collection<UserDBType>
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 export async function runDb(url: string): Promise<MongoClient | false> {
@@ -16,6 +18,7 @@ export async function runDb(url: string): Promise<MongoClient | false> {
 
     blogsCollection = db.collection<BlogDBType>(SETTINGS.PATH.BLOGS);
     postsCollection = db.collection<PostDBType>(SETTINGS.PATH.POSTS);
+    usersCollection = db.collection<UserDBType>(SETTINGS.PATH.USERS);
     try {
         await client.connect();
         await db.command({ ping: 1 });
